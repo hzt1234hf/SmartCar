@@ -13,7 +13,7 @@ typedef struct{
 	volatile unsigned char PORT1			:	1;
 	volatile unsigned char PORT0			:	1;
 
-}__BITS_PTGPAR_PORT;
+}__BITS_PANPAR_PORT;
 
 typedef struct{
 
@@ -26,7 +26,7 @@ typedef struct{
 	volatile unsigned char DDR1			:	1;
 	volatile unsigned char DDR0			:	1;
 
-}__BITS_PTGPAR_DDR;
+}__BITS_PANPAR_DDR;
 
 typedef struct{
 
@@ -39,7 +39,7 @@ typedef struct{
 	volatile unsigned char SET1			:	1;
 	volatile unsigned char SET0			:	1;
 
-}__BITS_PTGPAR_SET;
+}__BITS_PANPAR_SET;
 
 typedef struct{
 
@@ -52,56 +52,46 @@ typedef struct{
 	volatile unsigned char CLR1			:	1;
 	volatile unsigned char CLR0			:	1;
 
-}__BITS_PTGPAR_CLR;
-#define GPIO_PORTTG                      ((volatile __BITS_PTGPAR_PORT *)(0x40100002))
-#define GPIO_DDRTG                       ((volatile __BITS_PTGPAR_DDR *)(0x4010001A))
-#define GPIO_SETTG                       ((volatile __BITS_PTGPAR_SET *)(0x40100032))
-#define GPIO_CLRTG                       ((volatile __BITS_PTGPAR_SET *)(0x4010004A))
+}__BITS_PANPAR_CLR;
+#define GPIO_PORTAN                      ((volatile __BITS_PANPAR_PORT *)(0x4010000A))
+#define GPIO_DDRAN                       ((volatile __BITS_PANPAR_DDR *)(0x40100022))
+#define GPIO_SETAN                       ((volatile __BITS_PANPAR_SET *)(0x4010003A))
+#define GPIO_CLRAN                       ((volatile __BITS_PANPAR_SET *)(0x40100052))
 
-#define GPIO_PORTTG_PORT0_A16               GPIO_PORTTG->PORT0
-#define GPIO_PORTTG_PORT1_A17               GPIO_PORTTG->PORT1
-#define GPIO_PORTTG_PORT2_A18               GPIO_PORTTG->PORT2
-#define GPIO_PORTTG_PORT3_A19               GPIO_PORTTG->PORT3
-#define GPIO_PORTTG_PORT4                   GPIO_PORTTG->PORT4
-#define GPIO_PORTTG_PORT5                   GPIO_PORTTG->PORT5
-#define GPIO_PORTTG_PORT6                   GPIO_PORTTG->PORT6
-#define GPIO_PORTTG_PORT7                   GPIO_PORTTG->PORT7
-/*简化名称*/
-#define W_A16               GPIO_PORTTG->PORT0
-#define W_A17               GPIO_PORTTG->PORT1
-#define W_A18               GPIO_PORTTG->PORT2
-#define W_A19               GPIO_PORTTG->PORT3
+#define GPIO_PORTAN_PORT0_AN0               GPIO_PORTAN->PORT0
+#define GPIO_PORTAN_PORT1_AN1               GPIO_PORTAN->PORT1
+#define GPIO_PORTAN_PORT2_AN2               GPIO_PORTAN->PORT2
+#define GPIO_PORTAN_PORT3_AN3               GPIO_PORTAN->PORT3
+#define GPIO_PORTAN_PORT4_AN4               GPIO_PORTAN->PORT4
+#define GPIO_PORTAN_PORT5_AN5               GPIO_PORTAN->PORT5
+#define GPIO_PORTAN_PORT6_AN6               GPIO_PORTAN->PORT6
+#define GPIO_PORTAN_PORT7_AN7               GPIO_PORTAN->PORT7
 
-#define GPIO_PORTTG_SET0_A16               GPIO_SETTG->SET0
-#define GPIO_PORTTG_SET1_A17               GPIO_SETTG->SET1
-#define GPIO_PORTTG_SET2_A18               GPIO_SETTG->SET2
-#define GPIO_PORTTG_SET3_A19               GPIO_SETTG->SET3
-#define GPIO_PORTTG_SET4                   GPIO_SETTG->SET4
-#define GPIO_PORTTG_SET5                   GPIO_SETTG->SET5
-#define GPIO_PORTTG_SET6                   GPIO_SETTG->SET6
-#define GPIO_PORTTG_SET7                   GPIO_SETTG->SET7
-/*简化名称*/
-#define R_A16               GPIO_SETTG->SET0
-#define R_A17               GPIO_SETTG->SET1
-#define R_A18               GPIO_SETTG->SET2
-#define R_A19               GPIO_SETTG->SET3
+#define GPIO_PORTAN_SET0_AN0               GPIO_SETAN->SET0
+#define GPIO_PORTAN_SET1_AN1               GPIO_SETAN->SET1
+#define GPIO_PORTAN_SET2_AN2               GPIO_SETAN->SET2
+#define GPIO_PORTAN_SET3_AN3               GPIO_SETAN->SET3
+#define GPIO_PORTAN_SET4_AN4               GPIO_SETAN->SET4
+#define GPIO_PORTAN_SET5_AN5               GPIO_SETAN->SET5
+#define GPIO_PORTAN_SET6_AN6               GPIO_SETAN->SET6
+#define GPIO_PORTAN_SET7_AN7               GPIO_SETAN->SET7
 
-#define GPIO_PORTTG_DDR0_A16                GPIO_DDRTG->DDR0
-#define GPIO_PORTTG_DDR1_A17                GPIO_DDRTG->DDR1
-#define GPIO_PORTTG_DDR2_A18                GPIO_DDRTG->DDR2
-#define GPIO_PORTTG_DDR3_A19                GPIO_DDRTG->DDR3
-#define GPIO_PORTTG_DDR4                    GPIO_DDRTG->DDR4
-#define GPIO_PORTTG_DDR5                    GPIO_DDRTG->DDR5
-#define GPIO_PORTTG_DDR6                    GPIO_DDRTG->DDR6
-#define GPIO_PORTTG_DDR7                    GPIO_DDRTG->DDR7
+#define GPIO_PORTAN_DDR0_AN0                GPIO_DDRAN->DDR0
+#define GPIO_PORTAN_DDR1_AN0                GPIO_DDRAN->DDR1
+#define GPIO_PORTAN_DDR2_AN0                GPIO_DDRAN->DDR2
+#define GPIO_PORTAN_DDR3_AN0                GPIO_DDRAN->DDR3
+#define GPIO_PORTAN_DDR4_AN0                GPIO_DDRAN->DDR4
+#define GPIO_PORTAN_DDR5_AN0                GPIO_DDRAN->DDR5
+#define GPIO_PORTAN_DDR6_AN0                GPIO_DDRAN->DDR6
+#define GPIO_PORTAN_DDR7_AN0                GPIO_DDRAN->DDR7
 
 
-#define W_SDA   W_A16
-#define W_SCL   W_A17
-#define R_SDA   R_A16
-#define R_SCL   R_A17
-#define DDR_SDA GPIO_PORTTG_DDR0_A16
-#define DDR_SCL GPIO_PORTTG_DDR1_A17
+#define W_SDA   GPIO_PORTAN_PORT7_AN7
+#define W_SCL   GPIO_PORTAN_PORT6_AN6
+#define R_SDA   GPIO_PORTAN_SET7_AN7
+#define R_SCL   GPIO_PORTAN_SET6_AN6
+#define DDR_SDA GPIO_PORTAN_DDR7_AN0
+#define DDR_SCL GPIO_PORTAN_DDR6_AN0
 
 #define SCL_H()         W_SCL=1
 #define SCL_L()         W_SCL=0
@@ -189,10 +179,10 @@ extern int SCCB_ReadByte(uint8 *pBuffer,   uint16 length,   uint8 ReadAddress);
 #define OV7725_COM13     0x3E
 #define OV7725_COM14     0x3F
 #define OV7725_COM16     0x41
-#define OV7725_TGT_B     0x42
-#define OV7725_TGT_R     0x43
-#define OV7725_TGT_Gb    0x44
-#define OV7725_TGT_Gr    0x45
+#define OV7725_ANT_B     0x42
+#define OV7725_ANT_R     0x43
+#define OV7725_ANT_Gb    0x44
+#define OV7725_ANT_Gr    0x45
 #define OV7725_LC_CTR    0x46
 #define OV7725_LC_XC     0x47
 #define OV7725_LC_YC     0x48

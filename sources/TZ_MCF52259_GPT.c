@@ -67,24 +67,32 @@ void TGPTx_Init(uint8 mode){
 
 }
 __declspec(interrupt) void TGPT0_interrupt(void){
-    leftMotorSpeed = MCF_GPT_GPTC0;
-    leftMSCnt++;
+
+    //MCF_GPIO_PORTTF |= MCF_GPIO_PORTTF_PORTTF3;//置位CD4520 Reset，清零Q0-Q3
+
+    leftMotorSpeed = MCF_GPT_GPTC0 - leftMSCnt;
+    leftMSCnt = MCF_GPT_GPTC0;
     //MCF_GPT_GPTFLG1 |= MCF_GPT_GPTFLG1_CF0;
-    //leftMotorSpeed = MCF_GPT_GPTC0 - leftMSCnt;
-    //leftMSCnt = MCF_GPT_GPTC0;
-    //TUart0_Putchar('0');
-    //sprintf(TXBuffer,"%d,%d\r\n",leftMotorSpeed,leftMSCnt);
+
+    //sprintf(TXBuffer,"left:%u,%u\n",leftMotorSpeed,leftMSCnt);
     //TUart0_Puts(TXBuffer);
+
+    //MCF_GPIO_PORTTF &= !MCF_GPIO_PORTTF_PORTTF3;//清零CD4520 Reset，开始计数
 }
 __declspec(interrupt) void TGPT1_interrupt(void){
-    rightMotorSpeed = MCF_GPT_GPTC1;
-    rightMSCnt++;
+
+    //MCF_GPIO_PORTTF |= MCF_GPIO_PORTTF_PORTTF3;//置位CD4520 Reset，清零Q0-Q3
+
+    rightMotorSpeed = MCF_GPT_GPTC1 - rightMSCnt;
+    rightMSCnt = MCF_GPT_GPTC1;
+
     //MCF_GPT_GPTFLG1 |= MCF_GPT_GPTFLG1_CF1;
-    //rightMotorSpeed = MCF_GPT_GPTC1 - rightMSCnt;
-    //rightMSCnt = MCF_GPT_GPTC1;
-    //TUart0_Putchar('0');
-    //sprintf(TXBuffer,"%u\r\n",MCF_GPT_GPTC1);
-    //TUart1_Puts(TXBuffer);
+
+    //sprintf(TXBuffer,"right:%u,%u\n",rightMotorSpeed,rightMSCnt);
+    //TUart0_Puts(TXBuffer);
+
+    //MCF_GPIO_PORTTF &= !MCF_GPIO_PORTTF_PORTTF3;//清零CD4520 Reset，开始计数
+
 }
 __declspec(interrupt) void TGPT3_interrupt(void){
     //sprintf(TXBuffer,"%u\r\n",MCF_GPT_GPTC3);

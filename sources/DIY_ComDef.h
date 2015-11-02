@@ -12,6 +12,9 @@ extern vuint16 leftMSCnt,rightMSCnt;           //左右电机GPT值
 extern vuint16 leftMotorSpeed,rightMotorSpeed; //左右电机速度值
 
 #include "stdio.h"
+#include "TZ_CAMERA_VAR.h"
+#include "TZ_CONTROL_VAR.h"
+
 #include "TZ_MCF52259_UART.h"
 #include "TZ_MCF52259_PWM.h"
 #include "DIY_FUNCTION.h"

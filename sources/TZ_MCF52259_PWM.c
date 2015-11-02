@@ -28,7 +28,7 @@ void TPWMx_INIT(uint8 mode){
 	switch(mode){
 	    //根据mode变量进行初始化，1、3、7使用输入捕获所以不会进行初始化，
 	    //需要初始化的是0(电机1)、2(电机2)、4、5(和4组合成16位，控制舵机)、6(保留)
-    	case 0:{
+    	case 0:{//右电机
     	    MCF_GPIO_PTCPAR |= MCF_GPIO_PTCPAR_DTIN0_PWM0;
 
             MCF_PWM_PWME &= ~MCF_PWM_PWME_PWME0;        //关闭PWM0输出
@@ -38,10 +38,10 @@ void TPWMx_INIT(uint8 mode){
             MCF_PWM_PWMCTL &= ~MCF_PWM_PWMCTL_CON01;    //取消合并0、1PWM模块
             MCF_PWM_PWMCNT0 = 0;//
             MCF_PWM_PWMPER0 = 250;
-            MCF_PWM_PWMDTY0 = 200;
+            MCF_PWM_PWMDTY0 = 0;
             MCF_PWM_PWME |= MCF_PWM_PWME_PWME0;         //启动PWM0输出
     	}break;
-    	case 2:{
+    	case 2:{//左电机
     	    MCF_GPIO_PTCPAR |= MCF_GPIO_PTCPAR_DTIN1_PWM2;
 
             MCF_PWM_PWME &= ~MCF_PWM_PWME_PWME2;        //关闭PWM2输出
@@ -51,7 +51,7 @@ void TPWMx_INIT(uint8 mode){
             MCF_PWM_PWMCTL &= ~MCF_PWM_PWMCTL_CON23;    //取消合并2、3PWM模块
             MCF_PWM_PWMCNT2 = 0;//
             MCF_PWM_PWMPER2 = 250;
-            MCF_PWM_PWMDTY2 = 200;
+            MCF_PWM_PWMDTY2 = 80;
             MCF_PWM_PWME |= MCF_PWM_PWME_PWME2;         //启动PWM2输出
     	}break;
         case 4:case 5:{

@@ -12,4 +12,6 @@ extern vuint16 chang2,hang2;
 extern vuint8 Cnt_HREF,Cnt_VSYN;
 extern uint8 bool;
 
+extern void showImg(void);
+
 #endif
