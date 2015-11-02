@@ -13,7 +13,7 @@ uint16 ADC7_Data;
 void TADCx_Init(){
 	MCF_GPIO_PANPAR = MCF_GPIO_PANPAR_AN0_AN0 | MCF_GPIO_PANPAR_AN1_AN1 | MCF_GPIO_PANPAR_AN2_AN2;
 	/*                  停止运行            全部为单端模式                  顺序一次            扫描结束中断使能*/
-	MCF_ADC_CTRL1 = MCF_ADC_CTRL1_STOP0 | MCF_ADC_CTRL1_CHNCFG(0) | MCF_ADC_CTRL1_SMODE(0) | MCF_ADC_CTRL1_EOSIE0;
+	MCF_ADC_CTRL1 = MCF_ADC_CTRL1_STOP0 | MCF_ADC_CTRL1_CHNCFG(0) | MCF_ADC_CTRL1_SMODE(2);
 	MCF_ADC_CTRL2 = MCF_ADC_CTRL2_DIV(7);   //  配置ADC时钟频率  ADC时钟频率 = fsys/(2*(DIV+1)) = 80MHz/256 = 312.5kHz
 	MCF_ADC_ADZCC = 0;                      //  过零全部禁止
     /* 通道设置 全部为默认对应引脚 */
@@ -63,7 +63,11 @@ void TADCx_Init(){
 	MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_MASKALL;
 	MCF_INTC0_ICR49 = MCF_INTC_ICR_IP(5) + MCF_INTC_ICR_IL(3);
 
+	MCF_ADC_POWER &=~ MCF_ADC_POWER_PD0;
+	while(MCF_ADC_POWER & MCF_ADC_POWER_PSTS0);
+
 }
+
 void TADC_Test(void){
     MCF_ADC_CTRL1 &= ~MCF_ADC_CTRL1_STOP0;
     MCF_ADC_CTRL1 |= MCF_ADC_CTRL1_START0;
@@ -73,6 +77,8 @@ __declspec(interrupt:0) void TADCA_interrupt(void){
     ADC0_Data = (MCF_ADC_ADRSLT0>>3)&0x0fff;
     ADC1_Data = (MCF_ADC_ADRSLT1>>3)&0x0fff;
     ADC2_Data = (MCF_ADC_ADRSLT2>>3)&0x0fff;
+    sprintf(TXBuffer,"%u,%u,%u--\r\n",ADC0_Data,ADC1_Data,ADC2_Data);
+    TUart0_Puts(TXBuffer);
     MCF_ADC_ADSTAT |= MCF_ADC_ADSTAT_EOSI0;
 }
 __declspec(interrupt:0) void TADCB_interrupt(void){
