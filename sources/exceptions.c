@@ -3,6 +3,7 @@
  * Purpose: Generic exception handling for ColdFire processors
  *
  */
+#include "DIY_ComDef.h"
 #include "exceptions.h"
 #include "startcf.h"
 #include "support_common.h"
@@ -14,8 +15,8 @@ extern __declspec(system) unsigned long __VECTOR_RAM[];
 /***********************************************************************/
 /*
  *  Set NO_PRINTF to 0 in order the exceptions.c interrupt handler
- *  to output messages to the standard io. 
- * 
+ *  to output messages to the standard io.
+ *
  */
 #define NO_PRINTF    1
 
@@ -38,18 +39,18 @@ extern unsigned long far _SP_INIT[];
 
 /***********************************************************************/
 /*
- * Handling of the TRK ColdFire libs (printf support in Debugger Terminal) 
- * 
+ * Handling of the TRK ColdFire libs (printf support in Debugger Terminal)
+ *
  * To enable this support (setup by default in CONSOLE_RAM build target
- * if available):  
- * - Set CONSOLE_IO_SUPPORT to 1 in this file; this will enable 
+ * if available):
+ * - Set CONSOLE_IO_SUPPORT to 1 in this file; this will enable
  *   TrapHandler_printf for the trap #14 exception.
  *   (this is set by default to 1 in the ColdFire Pre-Processor panel for
  *   the CONSOLE_RAM build target)
  *
  * - Make sure the file:
  *   {Compiler}ColdFire_Support\msl\MSL_C\MSL_ColdFire\Src\console_io_cf.c
- *   is referenced from your project. 
+ *   is referenced from your project.
  *
  * - Make sure that in the CF Exceptions panel the check box
  *   "46 TRAP #14 for Console I/O", in the "User Application Exceptions"
@@ -57,7 +58,7 @@ extern unsigned long far _SP_INIT[];
  *
  */
 #ifndef CONSOLE_IO_SUPPORT
-#define CONSOLE_IO_SUPPORT  0 
+#define CONSOLE_IO_SUPPORT  0
 #endif
 
 #if CONSOLE_IO_SUPPORT
@@ -65,30 +66,31 @@ asm void __declspec(register_abi) TrapHandler_printf(void) {
    HALT
    RTE
 }
-#endif                                                   
+#endif
 
 /***********************************************************************/
 /*
- * This is the handler for all exceptions which are not common to all 
- * ColdFire Chips.  
+ * This is the handler for all exceptions which are not common to all
+ * ColdFire Chips.
  *
  * Called by mcf_exception_handler
- * 
+ *
  */
 void derivative_interrupt(unsigned long vector)
 {
    if (vector < 64 || vector > 192) {
       VECTORDISPLAY2("User Defined Vector #%d\n",vector);
    }
+   TUart2_Puts("Hello MCF52259 by TUART2!\r\n");
 }
 
 /***********************************************************************
  *
- * This is the exception handler for all  exceptions common to all 
- * chips ColdFire.  Most exceptions do nothing, but some of the more 
+ * This is the exception handler for all  exceptions common to all
+ * chips ColdFire.  Most exceptions do nothing, but some of the more
  * important ones are handled to some extent.
  *
- * Called by asm_exception_handler 
+ * Called by asm_exception_handler
  *
  * The ColdFire family of processors has a simplified exception stack
  * frame that looks like the following:
@@ -108,7 +110,7 @@ void derivative_interrupt(unsigned long vector)
  *           4 +---------------------------------------+------------------------------------+
  *             | Format | FS[3..2] | Vector | FS[1..0] |                 SR                 |
  *   SP -->  0 +---------------------------------------+------------------------------------+
- */ 
+ */
 #define MCF5XXX_RD_SF_FORMAT(PTR)   \
    ((*((unsigned short *)(PTR)) >> 12) & 0x00FF)
 
@@ -125,11 +127,11 @@ void derivative_interrupt(unsigned long vector)
 #define MCF5XXX_EXCEPTFMT     "%s -- PC = %#08X\n"
 
 
-void mcf_exception_handler(void *framepointer) 
+void mcf_exception_handler(void *framepointer)
 {
-   volatile unsigned long exceptionStackFrame = (*(unsigned long *)(framepointer)); 
-   volatile unsigned short stackFrameSR       = MCF5XXX_SF_SR(framepointer);  
-   volatile unsigned short stackFrameWord     = (*(unsigned short *)(framepointer));  
+   volatile unsigned long exceptionStackFrame = (*(unsigned long *)(framepointer));
+   volatile unsigned short stackFrameSR       = MCF5XXX_SF_SR(framepointer);
+   volatile unsigned short stackFrameWord     = (*(unsigned short *)(framepointer));
    volatile unsigned long  stackFrameFormat   = (unsigned long)MCF5XXX_RD_SF_FORMAT(&stackFrameWord);
    volatile unsigned long  stackFrameFS       = (unsigned long)MCF5XXX_RD_SF_FS(&stackFrameWord);
    volatile unsigned long  stackFrameVector   = (unsigned long)MCF5XXX_RD_SF_VECTOR(&stackFrameWord);
@@ -283,7 +285,7 @@ void mcf_exception_handler(void *framepointer)
 
 asm void __declspec(register_abi) asm_exception_handler(void)
 {
-   link     a6,#0 
+   link     a6,#0
    lea     -20(sp), sp
    movem.l d0-d2/a0-a1, (sp)
    lea     24(sp),a0   /* A0 point to exception stack frame on the stack */
@@ -299,7 +301,7 @@ typedef void (* vectorTableEntryType)(void);
 #pragma define_section vectortable ".vectortable" far_absolute R
 
 /* CF have 255 vector + SP_INIT in the vector table (256 entries)
-*/  
+*/
 __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vector table */
    (vectorTableEntryType)__SP_AFTER_RESET,  /*   0 (0x000) Initial supervisor SP      */
    _startup,                        /*   1 (0x004) Initial PC                 */
@@ -347,11 +349,11 @@ __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vecto
    asm_exception_handler,           /*  43 (0x0AC) TRAP #11                   */
    asm_exception_handler,           /*  44 (0x0B0) TRAP #12                   */
    asm_exception_handler,           /*  45 (0x0B4) TRAP #13                   */
-#if CONSOLE_IO_SUPPORT   
+#if CONSOLE_IO_SUPPORT
    TrapHandler_printf,              /*  46 (0x0B8) TRAP #14                   */
 #else
    asm_exception_handler,           /*  46 (0x0B8) TRAP #14                   */
-#endif   
+#endif
    asm_exception_handler,           /*  47 (0x0BC) TRAP #15                   */
    asm_exception_handler,           /*  48 (0x0C0) Reserved                   */
    asm_exception_handler,           /*  49 (0x0C4) Reserved                   */
@@ -370,28 +372,28 @@ __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vecto
    asm_exception_handler,           /*  62 (0x0F8) Reserved                   */
    asm_exception_handler,           /*  63 (0x0FC) Reserved                   */
    asm_exception_handler,           /*  64 (0x100) Device-specific interrupts */
-   asm_exception_handler,           /*  65 (0x104) Device-specific interrupts */
+   EPORT1_interrupt,           /*  65 (0x104) Device-specific interrupts */
    asm_exception_handler,           /*  66 (0x108) Device-specific interrupts */
-   asm_exception_handler,           /*  67 (0x10C) Device-specific interrupts */
+   EPORT3_interrupt,           /*  67 (0x10C) Device-specific interrupts */
    asm_exception_handler,           /*  68 (0x110) Device-specific interrupts */
-   asm_exception_handler,           /*  69 (0x114) Device-specific interrupts */
+   EPORT5_interrupt,           /*  69 (0x114) Device-specific interrupts */
    asm_exception_handler,           /*  70 (0x118) Device-specific interrupts */
-   asm_exception_handler,           /*  71 (0x11C) Device-specific interrupts */
+   EPORT7_interrupt,           /*  71 (0x11C) Device-specific interrupts */
    asm_exception_handler,           /*  72 (0x120) Device-specific interrupts */
-   asm_exception_handler,           /*  73 (0x124) Device-specific interrupts */
-   asm_exception_handler,           /*  74 (0x128) Device-specific interrupts */
-   asm_exception_handler,           /*  75 (0x12C) Device-specific interrupts */
-   asm_exception_handler,           /*  76 (0x130) Device-specific interrupts */
-   asm_exception_handler,           /*  77 (0x134) Device-specific interrupts */
-   asm_exception_handler,           /*  78 (0x138) Device-specific interrupts */
-   asm_exception_handler,           /*  79 (0x13C) Device-specific interrupts */
+   UART0_DMA_interrupt,           /*  73 (0x124) Device-specific interrupts */
+   TDMA1_interrupt,           /*  74 (0x128) Device-specific interrupts */
+   TDMA2_interrupt,           /*  75 (0x12C) Device-specific interrupts */
+   TDMA3_interrupt,           /*  76 (0x130) Device-specific interrupts */
+   UART0_interrupt,           /*  77 (0x134) Device-specific interrupts */
+   UART1_interrupt,           /*  78 (0x138) Device-specific interrupts */
+   UART2_interrupt,           /*  79 (0x13C) Device-specific interrupts */
    asm_exception_handler,           /*  80 (0x140) Device-specific interrupts */
    asm_exception_handler,           /*  81 (0x144) Device-specific interrupts */
    asm_exception_handler,           /*  82 (0x148) Device-specific interrupts */
-   asm_exception_handler,           /*  83 (0x14C) Device-specific interrupts */
-   asm_exception_handler,           /*  84 (0x150) Device-specific interrupts */
-   asm_exception_handler,           /*  85 (0x154) Device-specific interrupts */
-   asm_exception_handler,           /*  86 (0x158) Device-specific interrupts */
+   TDTIM0_interrupt,           /*  83 (0x14C) Device-specific interrupts */
+   TDTIM1_interrupt,           /*  84 (0x150) Device-specific interrupts */
+   TDTIM2_interrupt,           /*  85 (0x154) Device-specific interrupts */
+   TDTIM3_interrupt,           /*  86 (0x158) Device-specific interrupts */
    asm_exception_handler,           /*  87 (0x15C) Device-specific interrupts */
    asm_exception_handler,           /*  88 (0x160) Device-specific interrupts */
    asm_exception_handler,           /*  89 (0x164) Device-specific interrupts */
@@ -413,10 +415,10 @@ __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vecto
    asm_exception_handler,           /* 105 (0x1A4) Reserved                   */
    asm_exception_handler,           /* 106 (0x1A8) Reserved                   */
    asm_exception_handler,           /* 107 (0x___) Reserved                   */
-   asm_exception_handler,           /* 108 (0x___) Reserved                   */
-   asm_exception_handler,           /* 109 (0x___) Reserved                   */
+   TGPT0_interrupt,           /* 108 (0x___) Reserved                   */
+   TGPT1_interrupt,           /* 109 (0x___) Reserved                   */
    asm_exception_handler,           /* 110 (0x___) Reserved                   */
-   asm_exception_handler,           /* 111 (0x___) Reserved                   */
+   TGPT3_interrupt,           /* 111 (0x___) Reserved                   */
    asm_exception_handler,           /* 112 (0x___) Reserved                   */
    asm_exception_handler,           /* 113 (0x___) Reserved                   */
    asm_exception_handler,           /* 114 (0x___) Reserved                   */
@@ -424,8 +426,8 @@ __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vecto
    asm_exception_handler,           /* 116 (0x___) Reserved                   */
    asm_exception_handler,           /* 117 (0x___) Reserved                   */
    asm_exception_handler,           /* 118 (0x___) Reserved                   */
-   asm_exception_handler,           /* 119 (0x___) Reserved                   */
-   asm_exception_handler,           /* 120 (0x___) Reserved                   */
+   TPIT0_interrupt,           /* 119 (0x___) Reserved                   */
+   TPIT1_interrupt,           /* 120 (0x___) Reserved                   */
    asm_exception_handler,           /* 121 (0x___) Reserved                   */
    asm_exception_handler,           /* 122 (0x___) Reserved                   */
    asm_exception_handler,           /* 123 (0x___) Reserved                   */
@@ -560,18 +562,18 @@ __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vecto
    asm_exception_handler,           /* 252 (0x___) Reserved                   */
    asm_exception_handler,           /* 253 (0x___) Reserved                   */
    asm_exception_handler,           /* 254 (0x___) Reserved                   */
-   asm_exception_handler,           /* 255 (0x___) Reserved                   */ 
+   asm_exception_handler,           /* 255 (0x___) Reserved                   */
 };
 
 /********************************************************************
  * MCF5xxx ASM utility functions
  */
 asm void __declspec(register_abi) mcf5xxx_wr_vbr(unsigned long) { /* Set VBR */
-	
-	movec d0,VBR 
+
+	movec d0,VBR
 	nop
-	rts	
-}	
+	rts
+}
 
 /********************************************************************
  * MCF5xxx startup copy functions:
@@ -584,7 +586,7 @@ asm void __declspec(register_abi) mcf5xxx_wr_vbr(unsigned long) { /* Set VBR */
  * In case _vect address is different from __VECTOR_RAM,
  * the vector table is copied from _vect to __VECTOR_RAM.
  * In any case VBR is set to __VECTOR_RAM.
- */ 
+ */
 void initialize_exceptions(void)
 {
 	/*
@@ -592,9 +594,9 @@ void initialize_exceptions(void)
 	 */
 
 	register uint32 n;
-    
-	/* 
-     * Copy the vector table to RAM 
+
+	/*
+     * Copy the vector table to RAM
      */
 	if (__VECTOR_RAM != (unsigned long*)_vect)
 	{
