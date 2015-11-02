@@ -10,10 +10,11 @@
 */
 
 vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
-vuint8 Image_Edge[CAMERA_H][3] = {0};
+vuint8 Image_Edge[CAMERA_H][5] = {0};
 vuint8 Image_ToPC[IMG_SIZE+4];
-vuint8 *Image_Ptr;
 
+vuint8 *Image_Ptr;
+uint16 Img_GAMvalue = 0;
 void TZ_OV7725_Init(){
 
     //¼Ä´æÆ÷£¬¼Ä´æÆ÷Öµ´Î

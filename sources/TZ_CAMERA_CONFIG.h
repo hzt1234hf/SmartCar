@@ -11,9 +11,10 @@
 extern void TZ_OV7725_Init();
 
 extern vuint8 Image[CAMERA_H][CAMERA_W_8];
-extern vuint8 Image_Edge[CAMERA_H][3];
+extern vuint8 Image_Edge[CAMERA_H][5];
 extern vuint8 Image_ToPC[IMG_SIZE+4];
 extern vuint8 *Image_Ptr;
+extern uint16 Img_GAMvalue;
 
 /*
 typedef struct Bit2Char{

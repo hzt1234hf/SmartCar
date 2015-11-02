@@ -8,7 +8,6 @@
     2.注意边沿设置，是上升沿还是等等。。
 ）
 */
-
 vuint16 chang,hang;
 vuint16 chang2,hang2;
 uint8 bool = 1;
@@ -106,10 +105,13 @@ __declspec(interrupt) void EPORT1_interrupt(void){
             MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;      //开启一次场采集
         }break;
         case 3:{
+            bool = 1;
             TPIT1_ENABLE();
         }break;
         case 4:{
-            TPIT0_ENABLE();
+            //sprintf(TXBuffer,"%u-",bool);
+            //TUart0_Puts(TXBuffer);
+            //TPIT0_ENABLE();
         }break;
         case 5:{
             if(chang >= 50){
@@ -186,7 +188,7 @@ __declspec(interrupt) void EPORT7_interrupt(void){
 }
 
 void showImg(void){
-#if 0
+#if 1
     //DMA自动输出
     TUart0_Putchar(0x01);
     TUart0_Putchar(0xFE);
@@ -195,7 +197,7 @@ void showImg(void){
 
     TUart0_Putchar(0xFE);
     TUart0_Putchar(0x01);
-#elif 1
+#elif 0
     //DMA自动输出
     Image_ToPC[0] = 0x01;
     Image_ToPC[1] = 0xFE;

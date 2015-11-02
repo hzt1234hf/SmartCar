@@ -10,11 +10,11 @@ vuint16 leftMotorSpeed,rightMotorSpeed; //左右电机速度值
 
 int main(void)
 {
-    uint8 e,f;
 	EnableInterrupts();//打开总中断
 	pll_init();         //PLL初始化，时钟设置为80Mhz，可超频到144Mhz
 	//TADCx_Init();
-
+    //TADC_Test();
+    
 	/*串口初始化*/
 	TUartx_INIT(2);     //串口2初始化
 	TUartx_INIT(1);     //串口1初始化
@@ -87,15 +87,17 @@ int main(void)
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
-
-	pwmCnt = 3250;
-	while(1){}{
+    pwmCnt = 3700;
+    TPWM45_SetDTY(pwmCnt);
+	while(1){}
+	pwmCnt = 3150;
+	while(1){
         while(pwmCnt<=4250){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt++;
             delay2();
         }
-        while(pwmCnt>=3250){
+        while(pwmCnt>=3150){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt--;
             delay2();
