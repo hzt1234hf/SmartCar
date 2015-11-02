@@ -141,9 +141,9 @@ void TDMAx_Init(uint8 mode){
             MCF_SCM_MPR = MCF_SCM_MPR_MPR(0x05);            //DMA可挂载总线
             MCF_SCM_DMAREQC |= MCF_SCM_DMAREQC_DMAC3(0x07); //设置为使用DTIME3作为外部触发
             MCF_DMA3_SAR = (vuint32)0;
-            MCF_DMA3_DAR = (vuint32)(&Image[0][0]); //设置数组地址
-            MCF_DMA3_BCR = IMG_SIZE;                //设置大小
-            MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
+            MCF_DMA3_DAR = (vuint32)0;
+            MCF_DMA3_BCR = 0;
+            MCF_DMA3_DSR = MCF_DMA_DSR_DONE;
 
             /*              源地址数据为字节型      目的地址数据为字节型     周期窃取       目的地址自动增加  传输完毕后关闭外部请求     使能中断*/
             //MCF_DMA3_DCR = MCF_DMA_DCR_SSIZE_BYTE | MCF_DMA_DCR_DSIZE_BYTE  | MCF_DMA_DCR_CS | MCF_DMA_DCR_DINC | MCF_DMA_DCR_D_REQ | MCF_DMA_DCR_INT | MCF_DMA_DCR_AA;

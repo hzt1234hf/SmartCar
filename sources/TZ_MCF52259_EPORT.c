@@ -8,11 +8,11 @@
     2.注意边沿设置，是上升沿还是等等。。
 ）
 */
+
 vuint16 chang,hang;
 vuint16 chang2,hang2;
 uint8 bool = 1;
 vuint8 Cnt_HREF = 0,Cnt_VSYN = 0;
-vuint8 Cnt_Output = 0;
 
 void TEPORTx_Init(uint8 mode){
     switch(mode){
@@ -27,7 +27,7 @@ void TEPORTx_Init(uint8 mode){
 
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_MASKALL;                   //开中断屏蔽
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_INT_MASK1;
-            MCF_INTC0_ICR01 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(3);   //设置中断优先级
+            MCF_INTC0_ICR01 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(1);   //设置中断优先级
 
         }break;
         case 3:{
@@ -60,19 +60,21 @@ void TEPORTx_Init(uint8 mode){
             MCF_GPIO_PNQPAR |= MCF_GPIO_PNQPAR_IRQ7_IRQ7;               //使能引脚功能为外部中端引脚
             MCF_EPORT_EPPAR |= MCF_EPORT_EPPAR_EPPA7_RISING;            //设置上升沿触发
             MCF_EPORT_EPDDR &= ~MCF_EPORT_EPDDR_EPDD7;                  //设置为引脚输入
-            MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
+            //MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
 
             MCF_EPORT_EPDR |= MCF_EPORT_EPDR_EPD7;
             //MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;                    //设置输出值
 
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_MASKALL;                   //开中断屏蔽
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_INT_MASK7;
-            MCF_INTC0_ICR07 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(1);   //设置中断优先级
+            MCF_INTC0_ICR07 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(3);   //设置中断优先级
         }break;
     }
 }
-__declspec(interrupt) void EPORT7_interrupt(void){
+__declspec(interrupt) void EPORT1_interrupt(void){
+    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
     chang++;
+    Cnt_HREF = 0;
 #if 0
 //轮训部分采集
     if((chang%25)==2){
@@ -95,41 +97,14 @@ __declspec(interrupt) void EPORT7_interrupt(void){
         }
     }
 #elif 1
-    switch(Cnt_VSYN){
-        case 1:{
-            MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
-            MCF_DMA3_DAR = (vuint32)&Image[0];      //重设数组地址
-            MCF_DMA3_BCR = IMG_SIZE;                //重设大小
-        }break;
-        case 2:{
-            MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;      //开启一次场采集
-        }break;
-        case 3:{
-            bool = 1;
-            TPIT1_ENABLE();
-        }break;
-        case 4:{
-            //sprintf(TXBuffer,"%u-",bool);
-            //TUart0_Puts(TXBuffer);
-            //TPIT0_ENABLE();
-        }break;
-        case 5:{
-            if(chang >= 50){
-                showImg();
-                chang = 0;
-            }
-            Cnt_VSYN = 0;
-        }break;
-    }
-    Cnt_VSYN++;
-
-#elif 0
     if(0 == (chang%150)){
+        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
         TPIT0_ENABLE();
         chang = 1;
+
     }else{
         MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
-        MCF_DMA3_DAR = (vuint32)(Image[0]);
+        MCF_DMA3_DAR = (vuint32)(&Image[0][0]);
         MCF_DMA3_BCR = IMG_SIZE;
         MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
     }
@@ -153,16 +128,14 @@ __declspec(interrupt) void EPORT7_interrupt(void){
         MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
     }
 #endif
-    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
-
-}
-__declspec(interrupt) void EPORT5_interrupt(void){
-    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF5;    //清中断标志位
 }
 __declspec(interrupt) void EPORT3_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF3;    //清中断标志位
 }
-__declspec(interrupt) void EPORT1_interrupt(void){
+__declspec(interrupt) void EPORT5_interrupt(void){
+    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF5;    //清中断标志位
+}
+__declspec(interrupt) void EPORT7_interrupt(void){
 #if 0
     if(Cnt_HREF%2){
         MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF/2][0]);
@@ -185,49 +158,5 @@ __declspec(interrupt) void EPORT1_interrupt(void){
 #endif
     hang ++;
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
-}
-
-void showImg(void){
-#if 1
-    //DMA自动输出
-    TUart0_Putchar(0x01);
-    TUart0_Putchar(0xFE);
-
-    TUart0_DMAPutBuffer(Image[0],IMG_SIZE);
-
-    TUart0_Putchar(0xFE);
-    TUart0_Putchar(0x01);
-#elif 0
-    //DMA自动输出
-    Image_ToPC[0] = 0x01;
-    Image_ToPC[1] = 0xFE;
-    Image_ToPC[IMG_SIZE+2] = 0xFE;
-    Image_ToPC[IMG_SIZE+3] = 0x01;
-    TUart0_DMAPutBuffer(Image_ToPC,IMG_SIZE+4);
-
-#elif 0
-
-    TUart0_Putchar(0);
-    TUart0_Putchar(255);
-    TUart0_Putchar(1);
-    TUart0_Putchar(0);
-    TUart0_DMAPutBuffer(Image[0],IMG_SIZE);
-
-#elif 0       //循环串口输出
-    uint8 a,b;
-    TUart0_Putchar(0x01);
-    TUart0_Putchar(0xFE);
-
-    for(a = 0;a<CAMERA_H;a++){
-        for(b = 0;b<CAMERA_W_8;b++)
-            TUart0_Putchar(Image[a][b]);
-        //TUart0_Putchar(Image[a][0]);
-
-    }
-
-    TUart0_Putchar(0xFE);
-    TUart0_Putchar(0x01);
-#endif
-
 }
 #endif

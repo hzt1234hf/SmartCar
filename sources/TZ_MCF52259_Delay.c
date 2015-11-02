@@ -25,7 +25,7 @@ void delay2(void){
     while(i--){}
 }
 void delay3(void){
-    uint32 i = 10000000;
+    uint32 i = 1000000;
     while(i--){}
 }
 #endif

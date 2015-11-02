@@ -10,15 +10,10 @@
 */
 
 vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
-vuint8 Image_Edge[CAMERA_H][5] = {0};
 vuint8 Image_ToPC[IMG_SIZE+4];
-
 vuint8 *Image_Ptr;
-uint16 Img_GAMvalue = 0;
-void TZ_OV7725_Init(){
 
-    MCF_GPIO_PANPAR = 0;//设为GPIO口
-    MCF_GPIO_DDRAN = 0xff;//全为输出口
+void TZ_OV7725_Init(){
 
     //寄存器，寄存器值次
     SCCB_WriteByte(OV7725_COM4         , 0xC1);
@@ -105,7 +100,7 @@ void TZ_OV7725_Init(){
     SCCB_WriteByte(OV7725_SDE          , 0x04);
     SCCB_WriteByte(OV7725_BRIGHT       , 0x00);
 
-    SCCB_WriteByte(OV7725_CNST         , 80);
+    SCCB_WriteByte(OV7725_CNST         , 0x7F);
 
     SCCB_WriteByte(OV7725_SIGN         , 0x06);
     SCCB_WriteByte(OV7725_UVADJ0       , 0x11);
