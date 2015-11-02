@@ -10,6 +10,7 @@
 */
 
 vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
+vuint8 Image_Edge[CAMERA_H][3] = {0};
 vuint8 Image_ToPC[IMG_SIZE+4];
 vuint8 *Image_Ptr;
 
@@ -100,7 +101,7 @@ void TZ_OV7725_Init(){
     SCCB_WriteByte(OV7725_SDE          , 0x04);
     SCCB_WriteByte(OV7725_BRIGHT       , 0x00);
 
-    SCCB_WriteByte(OV7725_CNST         , 0x7F);
+    SCCB_WriteByte(OV7725_CNST         , 80);
 
     SCCB_WriteByte(OV7725_SIGN         , 0x06);
     SCCB_WriteByte(OV7725_UVADJ0       , 0x11);
