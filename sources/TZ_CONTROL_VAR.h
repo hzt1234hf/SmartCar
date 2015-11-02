@@ -16,7 +16,6 @@ extern uint8 controlFinsh;//
 
 //近距离直线控制变量
 
-extern uint8 centLineOffset;
 extern int8 centerLineSub;
 extern uint8 lineOffsetRow;
 
@@ -73,6 +72,7 @@ extern int lenOfSpeed_Row;   //速度指向的图像行数
 
 /*电机相关变量*/
 extern uint16 baseSpeed;       //基础速度
+extern uint16 variSpeed;       //基础速度
 
 extern float leftMotorBase;
 extern float rightMotorBase;
@@ -101,8 +101,14 @@ extern int motorCnt2;
 extern float motorOffset;      //根据电机转速求出的偏移值
 
 /*舵机相关变量*/
-extern uint16 pwmCnt;
+extern int imgOffsetMax;
+extern int imgOffsetMin;
 extern float steerOffsetCnt;
+extern uint16 steerPwm;            //当前舵机PWM值
+extern float steerPwmf;             //当前舵机PWM值的float型
+extern uint16 baseSteerPwm;         //基础舵机PWM值
+extern uint16 baseSteerPwmMax;      //舵机最大值
+extern uint16 baseSteerPwmMin;      //舵机最小值
 
 /*斜率相关变量*/
 extern float Slope[80];

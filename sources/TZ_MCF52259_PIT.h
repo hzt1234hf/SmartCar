@@ -40,6 +40,8 @@ extern int SetSpeed;             //定义设定值
 
 extern float Kp,Ki,Kd;             //定义比例、积分、微分系数
 extern float Kp_a,Ki_a,Kd_a;       //定义比例、积分、微分系数
+extern float Kp_ab,Ki_ab,Kd_ab;       //基础比例、积分、微分系数
+extern float Kp_ao,Ki_ao,Kd_ao;       //偏移比例、积分、微分系数
 
 
 #endif

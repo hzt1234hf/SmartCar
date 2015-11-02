@@ -81,7 +81,6 @@ void derivative_interrupt(unsigned long vector)
    if (vector < 64 || vector > 192) {
       VECTORDISPLAY2("User Defined Vector #%d\n",vector);
    }
-   TUart2_Puts("Hello MCF52259 by TUART2!\r\n");
 }
 
 /***********************************************************************

@@ -34,7 +34,7 @@ void TPWMx_INIT(uint8 mode){
             MCF_PWM_PWMCTL &= ~MCF_PWM_PWMCTL_CON01;    //取消合并0、1PWM模块
             MCF_PWM_PWMCNT0 = 0;//
             MCF_PWM_PWMPER0 = 250;
-            MCF_PWM_PWMDTY0 = 80;
+            MCF_PWM_PWMDTY0 = 100;
             MCF_PWM_PWME |= MCF_PWM_PWME_PWME0;         //启动PWM0输出
     	}break;
     	case 2:{//左电机
@@ -47,7 +47,7 @@ void TPWMx_INIT(uint8 mode){
             MCF_PWM_PWMCTL &= ~MCF_PWM_PWMCTL_CON23;    //取消合并2、3PWM模块
             MCF_PWM_PWMCNT2 = 0;//
             MCF_PWM_PWMPER2 = 250;
-            MCF_PWM_PWMDTY2 = 80;
+            MCF_PWM_PWMDTY2 = 100;
             MCF_PWM_PWME |= MCF_PWM_PWME_PWME2;         //启动PWM2输出
     	}break;
         case 4:case 5:{

@@ -61,10 +61,13 @@ int main(void)
 
 	MCF_GPIO_PTJPAR &= ~(MCF_GPIO_PTJPAR_FEC_TXD0_GPIO | MCF_GPIO_PTJPAR_FEC_TXD1_GPIO | MCF_GPIO_PTJPAR_FEC_TXD2_GPIO | MCF_GPIO_PTJPAR_FEC_TXD3_GPIO);
 	//颜色模块的0、1、2、3号引脚
-	MCF_GPIO_DDRTJ |= MCF_GPIO_DDRTJ_DDRTJ2 | MCF_GPIO_DDRTJ_DDRTJ3 | MCF_GPIO_DDRTJ_DDRTJ4 | MCF_GPIO_DDRTJ_DDRTJ5;
+	//MCF_GPIO_DDRTJ |= MCF_GPIO_DDRTJ_DDRTJ2 | MCF_GPIO_DDRTJ_DDRTJ3 | MCF_GPIO_DDRTJ_DDRTJ4 | MCF_GPIO_DDRTJ_DDRTJ5;
     //输出
-    MCF_GPIO_CLRTJ &= ~(MCF_GPIO_CLRTJ_CLRTJ4 | MCF_GPIO_CLRTJ_CLRTJ5);//清空s2 s3 设置为检测红色
-    MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+    //MCF_GPIO_CLRTJ &= ~(MCF_GPIO_CLRTJ_CLRTJ4 | MCF_GPIO_CLRTJ_CLRTJ5);//清空s2 s3 设置为检测红色
+    //MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+
+	MCF_GPIO_DDRTJ &= ~(MCF_GPIO_DDRTJ_DDRTJ2 | MCF_GPIO_DDRTJ_DDRTJ3 | MCF_GPIO_DDRTJ_DDRTJ4 | MCF_GPIO_DDRTJ_DDRTJ5);
+    //输入
 
     //SCCB_WriteByte(OV7725_HOutSize,0x14);
     //SCCB_WriteByte(OV7725_VOutSize,0x1E);
@@ -82,7 +85,7 @@ int main(void)
     enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG1 ? 0x04:0;
     enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG2 ? 0x08:0;
     enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG3 ? 0x10:0;
-    
+
     //sprintf(TXBuffer,"%u = %u,%u,%u,%u,%u\n",enCoder,MCF_GPIO_SETTF&MCF_GPIO_SETTF_SETTF7,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG0,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG1,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG2,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG3);
     //TUart0_Puts(TXBuffer);
 
@@ -119,7 +122,7 @@ int main(void)
 	//TGPTx_Init(3);  //颜色传感器输入捕获模式初始化
 	TGPTx_Init(0);  //编码器1输入捕获模式初始化
 	TGPTx_Init(1);  //编码器2输入捕获模式初始化
-	
+
     TGPT0_ENINTER();   //关GPT0中断
     TGPT1_ENINTER();   //关GPT1中断
     //TGPT3_ENINTER();   //关GPT3中断
@@ -135,12 +138,129 @@ int main(void)
 	/*外部中断初始化*/
 	//TEPORTx_Init(1);    //行外部中断初始化
 
+    //baseSteerPwm = 2920;//本车
+    baseSteerPwm = 2920;//带车
+    baseSteerPwmMax = baseSteerPwm + 350;
+    baseSteerPwmMin = baseSteerPwm - 350;
+    steerPwm = baseSteerPwm;
+    steerPwmf = baseSteerPwm;
+
     TEPORTx_Init(7);    //场外部中断初始化
-    
+
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
+
+    switch(enCoder){
+        case 0:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 80; variSpeed = 50;
+        }break;
+        case 1:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 100;variSpeed = 150;
+        }break;
+        case 2:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+        case 3:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 150;variSpeed = 170;
+        }break;
+
+        case 4:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 80; variSpeed = 50;
+        }break;
+        case 5:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 100;variSpeed = 150;
+        }break;
+        case 6:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+        case 7:{
+            Kp_a = 0.5; Ki_a = 0.8; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+        case 8:{
+            Kp_a = 0.5; Ki_a = 0.9; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+        case 9:{
+            Kp_a = 0.6; Ki_a = 0.8; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+
+        case 10:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 80; variSpeed = 50;
+        }break;
+        case 11:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 100;variSpeed = 150;
+        }break;
+        case 12:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+        case 13:{
+            Kp_a = 0.5; Ki_a = 0.5; Kd_a = 0.0; baseSpeed = 150;variSpeed = 170;
+        }break;
+
+        case 14:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 80; variSpeed = 50;
+        }break;
+        case 15:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 100;variSpeed = 150;
+        }break;
+        case 16:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 120;variSpeed = 160;
+        }break;
+        case 17:{
+            Kp_a = 0.5; Ki_a = 0.7; Kd_a = 0.0; baseSpeed = 150;variSpeed = 170;
+        }break;
+        case 18:{
+            Kp_a = 0.5; Ki_a = 0.8; Kd_a = 0.0; baseSpeed = 150;variSpeed = 170;
+        }break;
+        case 19:{
+            Kp_a = 0.5; Ki_a = 0.9; Kd_a = 0.0; baseSpeed = 150;variSpeed = 170;
+        }break;
+
+        case 20:{
+            Kp_ab = 0.3; Ki_ab = 0.4; Kd_ab = 0.0; ;
+            Kp_ao = 0.0; Ki_ao = 0.4; Kd_ao = 0.0; baseSpeed = 120; variSpeed = 80;
+        }break;
+        case 21:{
+            Kp_ab = 0.4; Ki_ab = 0.5; Kd_ab = 0.0; ;
+            Kp_ao = 0.0; Ki_ao = 0.3; Kd_ao = 0.0; baseSpeed = 120; variSpeed = 80;
+        }break;
+        case 22:{
+            Kp_ab = 0.5; Ki_ab = 0.5; Kd_ab = 0.0; ;
+            Kp_ao = 0.0; Ki_ao = 0.4; Kd_ao = 0.0; baseSpeed = 120; variSpeed = 80;
+        }break;
+        case 23:{
+            Kp_ab = 0.6; Ki_ab = 0.3; Kd_ab = 0.0; ;
+            Kp_ao = 0.0; Ki_ao = 0.5; Kd_ao = 0.0; baseSpeed = 120; variSpeed = 80;
+        }break;
+        case 24:{
+            Kp_ab = 0.3; Ki_ab = 0.5; Kd_ab = 0.0; ;
+            Kp_ao = 0.0; Ki_ao = 0.3; Kd_ao = 0.0; baseSpeed = 120; variSpeed = 80;
+        }break;
+        case 25:{
+            Kp_ab = 0.3; Ki_ab = 0.5; Kd_ab = 0.0; ;
+            Kp_ao = 0.0; Ki_ao = 0.3; Kd_ao = 0.0; baseSpeed = 140; variSpeed = 100;
+        }break;
+
+    }
+
     for(;;){}
+    for(;;){
+        if(MCF_GPIO_SETTJ&MCF_GPIO_SETTJ_SETTJ2){
+            delay2();
+            if(MCF_GPIO_SETTJ&MCF_GPIO_SETTJ_SETTJ2){
+                TUart0_Puts("hw\n");
+            }
+        }
+    }
+    c = 0;
+    for(;;){
+        delay();
+        c++;
+        if(c>150)
+        c = 0;
+        TPWM0_SetDTY(c);
+        TPWM2_SetDTY(250-c);
+    }
     //电机测试代码
     SetSpeed = 100;
     for(;;){
@@ -154,20 +274,20 @@ int main(void)
         SetSpeed = ab[c++];
         if(c == 30)
             c = 0;
-        
+
     }
     //舵机测试代码
-	pwmCnt = 2880;//正常值为3000，舵机片有一点点，因此偏移一点
-    TPWM45_SetDTY(pwmCnt);
-    while(1){}{
-        while(pwmCnt<=3230){
-            TPWM45_SetDTY(pwmCnt);
-            pwmCnt++;
+	steerPwm = 2880;//正常值为3000，舵机片有一点点，因此偏移一点
+    TPWM45_SetDTY(baseSteerPwm);
+    while(1){
+        while(steerPwm<=3230){
+            TPWM45_SetDTY(steerPwm);
+            steerPwm++;
             delay2();
         }
-        while(pwmCnt>=2510){
-            TPWM45_SetDTY(pwmCnt);
-            pwmCnt--;
+        while(steerPwm>=2510){
+            TPWM45_SetDTY(steerPwm);
+            steerPwm--;
             delay2();
         }
 	}

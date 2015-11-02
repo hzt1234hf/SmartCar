@@ -18,7 +18,6 @@
     float world_ActualRange[50] = {220.0,213.0,206.4,200.0,194.0,188.2,182.6,177.3,172.2,167.3,162.6,158.1,153.7,149.6,145.5,141.6,137.9,134.2,130.7,127.3,120.8,114.7,109.0,103.6,98.5,93.6,89.0,84.7,80.5,76.5,72.7,69.1,65.6,62.3,57.5,53.0,48.7,44.7,40.9,37.2,33.7,30.4,26.1,22.1,18.3,14.6,11.2,7.8,3.8,0.5,};
 #endif
 
-
     vuint32 data,temp;
     int32 tempa,tempb;
     int32 tempc,tempd,tempe;
@@ -31,18 +30,27 @@
  /*以下部分为纵向扫描所用变量*/
 
 //左右结束为止都为0<= x <160
+    int nextImageAngle;     //下幅图像的方位
+
     int leftEdgeStart;  	//左边线检测的起始位置
-    int leftEdgeEnd;      //左边线检测的结束位置
+    int leftEdgeEnd;        //左边线检测的结束位置
     int leftEdgeOffset;
 
-    int rightEdgeStart;	//右边线检测的起始位置
+    int rightEdgeStart;	    //右边线检测的起始位置
     int rightEdgeEnd;		//右边线检测的结束位置
     int rightEdgeOffset;
 
     int edgetempa,edgetempb;
+    int signalLineOffset;   //单线偏移值
+    int signalLineOffset2;   //单线偏移值
+    uint8 singleLineState;   //单线状态
+    uint8 singleMode = 0;       //单线模式
+    uint8 singleLineEn = 0;     //单线扫描使能
+    uint8 singleLineCnt = 0;    //单线计数
+    uint8 singelLineMiss = 0;   //miss个数
 
     int img_EdgeInfo[IMG_H][5] = {0};//图像边界信息
-    //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
+    //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：双线 单线
     float world_EdgeInfo[IMG_H] = {0};//世界边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
 
@@ -55,19 +63,19 @@
     uint8 img_BuxianCnt;
     uint8 img_BuxianBool;
 
-    uint8 singleLineState;   //单线状态
 
     int8 leftEdgeFind = 0,rightEdgeFind = 0;		//左右边界是否找到标志量
     uint8 leftEdgeMissCnt = 0,rightEdgeMissCnt = 0;	//左右边界miss个数计数
     int8 leftEdgeBool = 1,rightEdgeBool = 1;		//左右边界
 
+    uint8 centLineOffset;
     uint8 edgeOffset;
     uint8 edgeBothMissCnt = 0;
     uint8 edgeMissBool;
 
-    int16 leftLastLine[2],rightLastLine[2];
-    int16 bothLastLine[2];
-    int16 lastLine[2];
+    int leftLastLine[2],rightLastLine[2];
+    int bothLastLine[2];
+    int lastLine[2];
 
     int centerLine = CAMERA_W/2+1;        //最后的中线列位置记录变量
     int8 centerLineSub = 0;

@@ -60,6 +60,8 @@ extern int u,v;
 
 extern uint8 edgeFillMode;
 
+extern int nextImageAngle;     //下幅图像的方位
+
 extern int leftEdgeStart;  		//左边线检测的起始位置
 extern int leftEdgeEnd;      		//左边线检测的结束位置
 extern int leftEdgeOffset;
@@ -69,6 +71,14 @@ extern int rightEdgeEnd;		//右边线检测的结束位置
 extern int rightEdgeOffset;
 
 extern int edgetempa,edgetempb;
+
+extern int signalLineOffset;   //单线偏移值
+extern int signalLineOffset2;   //单线偏移值
+extern uint8 singleLineState;   //单线状态
+extern uint8 singleMode;
+extern uint8 singleLineEn;
+extern uint8 singleLineCnt;
+extern uint8 singelLineMiss;
 
 extern int img_EdgeInfo[IMG_H][5];//图像边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
@@ -84,19 +94,18 @@ extern int img_BuxianEndRow;
 extern uint8 img_BuxianCnt;
 extern uint8 img_BuxianBool;
 
-extern uint8 singleLineState;   //单线状态
-
 extern int8 leftEdgeFind,rightEdgeFind;			//左右边界是否找到标志量
 extern uint8 leftEdgeMissCnt,rightEdgeMissCnt;	//左右边界miss个数计数
 extern int8 leftEdgeBool,rightEdgeBool;			//左右边界
 
+extern uint8 centLineOffset;
 extern uint8 edgeOffset;
 extern uint8 edgeBothMissCnt;
 extern uint8 edgeMissBool;
 
-extern int16 leftLastLine[2],rightLastLine[2];
-extern int16 bothLastLine[2];
-extern int16 lastLine[2];
+extern int leftLastLine[2],rightLastLine[2];
+extern int bothLastLine[2];
+extern int lastLine[2];
 
 extern int centerLine;
 extern uint8 lastCenterLine;

@@ -93,6 +93,14 @@ typedef struct{
 #define DDR_SDA GPIO_PORTAN_DDR7_AN0
 #define DDR_SCL GPIO_PORTAN_DDR6_AN0
 
+/*
+#define W_SDA   GPIO_PORTAN_PORT6_AN6
+#define W_SCL   GPIO_PORTAN_PORT7_AN7
+#define R_SDA   GPIO_PORTAN_SET6_AN6
+#define R_SCL   GPIO_PORTAN_SET7_AN7
+#define DDR_SDA GPIO_PORTAN_DDR6_AN0
+#define DDR_SCL GPIO_PORTAN_DDR7_AN0
+*/
 #define SCL_H()         W_SCL=1
 #define SCL_L()         W_SCL=0
 #define SCL_DDR_OUT()   DDR_SCL=1

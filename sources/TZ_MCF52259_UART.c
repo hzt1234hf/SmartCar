@@ -69,7 +69,7 @@ void TUartx_INIT(uint8 x){
         	MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_MASKALL;//清零屏蔽所有中断
             MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_INT_MASK14;//设置中断源号为14，实际位置为，14+64
             //              中断优先级，最高7级，中断级别，最高3级
-            MCF_INTC0_ICR14 = MCF_INTC_ICR_IP(4) |MCF_INTC_ICR_IL(2);
+            MCF_INTC0_ICR14 = MCF_INTC_ICR_IP(5) |MCF_INTC_ICR_IL(3);
 
         	MCF_UART1_UCR = MCF_UART_UCR_RX_ENABLED | MCF_UART_UCR_TX_ENABLED;//使能串口接收发送
         }break;
@@ -92,7 +92,7 @@ void TUartx_INIT(uint8 x){
         	MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_MASKALL;//清零屏蔽所有中断
             MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_INT_MASK15;//设置中断源号为15，实际位置为，15+64
             //              中断优先级，最高7级，中断级别，最高3级
-            MCF_INTC0_ICR15 = MCF_INTC_ICR_IP(4) |MCF_INTC_ICR_IL(2);
+            MCF_INTC0_ICR15 = MCF_INTC_ICR_IP(5) |MCF_INTC_ICR_IL(3);
 
         	MCF_UART2_UCR = MCF_UART_UCR_RX_ENABLED | MCF_UART_UCR_TX_ENABLED;//使能串口接收发送
 
@@ -100,14 +100,14 @@ void TUartx_INIT(uint8 x){
 	}
 }
 void TUart0_Putchar(char data){
-
     while(!(MCF_UART0_USR & MCF_UART_USR_TXEMP)){};
-//asm(move.b data,0x4000020C);
     MCF_UART0_UTB = data;
 }
+
 void TUart0_Puts(char *data){
     while(*data) TUart0_Putchar(*data++);
 }
+
 void TUart0_DMAInit(){
 
     MCF_DMA0_SAR = (vuint32)TXBuffer;
@@ -144,6 +144,7 @@ void TUart0_DMAInit(){
     //MCF_DMA0_DCR |= MCF_DMA_DCR_EEXT;
 
 }
+
 void TUart0_DMAPuts(uint16 size){
 
     MCF_DMA0_DSR |= MCF_DMA_DSR_DONE;
@@ -236,42 +237,51 @@ __declspec(interrupt) void UART1_interrupt(void){
              }break;
             case 202:{
                 uartMode = 1;
-                TUart1_Puts("Change To Mode 1(改P值)\n");
+                TUart1_Puts("Change P\n");
             }break;
             case 203:{
                 uartMode = 2;
-                TUart1_Puts("Change To Mode 2(改D值)\n");
+                TUart1_Puts("Change I\n");
+            }break;
+            case 204:{
+                uartMode = 3;
+                TUart1_Puts("Change D\n");
             }break;
             case 210:{
                 baseSpeed++;
-                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                sprintf(TXBuffer,"S:%u\n",baseSpeed);
                 TUart1_Puts(TXBuffer);
             }break;
             case 211:{
                 baseSpeed--;
-                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                sprintf(TXBuffer,"S:%u\n",baseSpeed);
                 TUart1_Puts(TXBuffer);
             }break;
             case 212:{
                 baseSpeed+=5;
-                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                sprintf(TXBuffer,"S:%u\n",baseSpeed);
                 TUart1_Puts(TXBuffer);
             }break;
             case 213:{
                 baseSpeed-=5;
-                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                sprintf(TXBuffer,"S:%u\n",baseSpeed);
                 TUart1_Puts(TXBuffer);
             }break;
             default:{
                 switch(uartMode){
                     case 1:{
                         Kp_a = a/100.0;
-                        sprintf(TXBuffer,"Curremnt P:0.%u\n",a);
+                        sprintf(TXBuffer,"P:0.%u\n",a);
                         TUart1_Puts(TXBuffer);
                     }break;
                     case 2:{
+                        Ki_a = a/100.0;
+                        sprintf(TXBuffer,"I:0.%u\n",a);
+                        TUart1_Puts(TXBuffer);
+                    }break;
+                    case 3:{
                         Kd_a = a/100.0;
-                        sprintf(TXBuffer,"Curremnt D:0.%u\n",a);
+                        sprintf(TXBuffer,"D:0.%u\n",a);
                         TUart1_Puts(TXBuffer);
                     }break;
                 }
@@ -284,11 +294,11 @@ __declspec(interrupt) void UART1_interrupt(void){
 __declspec(interrupt) void UART2_interrupt(void){
 
     uint8 a;
-    TUart2_Putchar('C');
+    //TUart2_Putchar('C');
     if(MCF_UART2_USR&MCF_UART_USR_RXRDY){
         a = MCF_UART2_URB;
-        TUart2_Putchar(a);
-        TUart2_Putchar('+');
+        //TUart2_Putchar(a);
+        //TUart2_Putchar('+');
     }
 
 }

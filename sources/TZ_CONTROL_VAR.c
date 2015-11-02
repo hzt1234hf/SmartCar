@@ -66,7 +66,6 @@ int16 tpCol2,tpRow2;
 int16 tpCol3,tpRow3;
 int16 tpLen1,tpLen2,tpLen3;
 
-uint8 centLineOffset = 5;
 uint8 lineOffsetRow = 0;
 
 /*总控制变量2*/
@@ -78,7 +77,8 @@ int lenOfSpeed_Row;   //速度指向的图像行数
 
 
 /*电机相关变量*/
-uint16 baseSpeed = 160;       //基础速度
+uint16 baseSpeed = 100;       //基础速度
+uint16 variSpeed = 100;       //基础速度
 
 float leftMotorBase;        //左GPT计数器基准时间
 float rightMotorBase;       //右GPT计数器基准时间
@@ -108,8 +108,14 @@ int motorCnt1;
 int motorCnt2;
 
 /*舵机相关变量*/
-uint16 pwmCnt;              //当前舵机PWM值
+int imgOffsetMax;
+int imgOffsetMin;
+uint16 steerPwm;            //当前舵机PWM值
+uint16 baseSteerPwm;         //基础舵机PWM值
+float steerPwmf;             //当前舵机PWM值的float型
 float steerOffsetCnt;       //计算后的舵机偏移值
+uint16 baseSteerPwmMax;      //舵机最大值
+uint16 baseSteerPwmMin;      //舵机最小值
 
 /*斜率相关变量*/
 float Slope[80];
