@@ -4,8 +4,8 @@
 
 #define TPIT0_SetMode 2
 #if(TPIT0_SetMode == 1)
-    #define TPIT0_PRECLK 12
-    #define TPIT0_ZQ 15.625
+    #define TPIT0_PRECLK 11
+    #define TPIT0_ZQ 19.531
 #elif (TPIT0_SetMode == 2)
     #define TPIT0_PRECLK 1
     #define TPIT0_ZQ 1
@@ -14,8 +14,8 @@
 
 #define TPIT1_SetMode 2
 #if(TPIT1_SetMode == 1)
-    #define TPIT1_PRECLK 12
-    #define TPIT1_ZQ 15.625
+    #define TPIT1_PRECLK 11
+    #define TPIT1_ZQ 19.531
 #elif (TPIT1_SetMode == 2)
     #define TPIT1_PRECLK 1
     #define TPIT1_ZQ 1
@@ -32,6 +32,5 @@
 extern void TPITx_Init(uint8 mode);
 __declspec(interrupt:0) void TPIT0_interrupt(void);
 __declspec(interrupt:0) void TPIT1_interrupt(void);
-extern uint16 sqrt_16(unsigned int M);
 
 #endif

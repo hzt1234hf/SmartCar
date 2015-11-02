@@ -3,58 +3,64 @@
 
 
     vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
-    uint8 Image_ToPC[IMG_SIZE+4];
+    vuint8 Image_ToPC[IMG_SIZE+4];
     vuint8 Image2[50][CAMERA_W_8];
-    vuint8 ImageC[IMG_H][IMG_W];
-    uint8 *Image_Ptr;
 
     vuint8 Image_Row[50] = {14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,64,67,70,73,76,79,82,85,89,93,97,101,105,109,114,119};
     //需要提取的行数
+
     //vuint8 Image_cotryRow[] = {0,0,0,0,0,0,0,0,0,0,0,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,0,33,0,35,0,37,0,39,0,41,0,43,0,45,0,47,0,49,0,51,0,53,0,55,0,57,0,0,60,0,0,63,0,0,66,0,0,69,0,0,72,0,0,75,0,0,78,0,0,81,0,0,0,85,0,0,0,89,0,0,0,93,0,0,0,97,0,0,0,101,0,0,0,0,106,0,0,0,0,111,0,0,0,0,116,0,0,0,};
 #if (WORLD_ACRA_DATATYPE == 1)
-    vuint8 world_ActualRange[50] = {220,213,206,200,194,188,183,177,172,167,163,158,154,150,146,142,138,134,131,127,121,115,109,104,98,94,89,85,80,77,73,69,66,62,57,53,49,45,41,37,34,30,26,22,18,15,11,8,4,1};
+    vuint8 world_ActualRange[50] = {220,213,206,200,194,188,183,177,172,167,163,158,154,150,146,142,138,134,131,127,121,115,109,104,98,94,89,85,80,77,73,69,66,62,57,53,49,45,41,37,34,30,26,22,18,15,11,8,4,0};
     //真实的行间距
 #elif (WORLD_ACRA_DATATYPE == 2)
-    float world_ActualRange[50] = {220.0,213.0,206.4,200.0,194.0,188.2,182.6,177.3,172.2,167.3,162.6,158.1,153.7,149.6,145.5,141.6,137.9,134.2,130.7,127.3,120.8,114.7,109.0,103.6,98.5,93.6,89.0,84.7,80.5,76.5,72.7,69.1,65.6,62.3,57.5,53.0,48.7,44.7,40.9,37.2,33.7,30.4,26.1,22.1,18.3,14.6,11.2,7.8,3.8,0.5,};
+    float world_ActualRange[50] = {220.0,213.0,206.4,200.0,194.0,188.2,182.6,177.3,172.2,167.3,162.6,158.1,153.7,149.6,145.5,141.6,137.9,134.2,130.7,127.3,120.8,114.7,109.0,103.6,98.5,93.6,89.0,84.7,80.5,76.5,72.7,69.1,65.6,62.3,57.5,53.0,48.7,44.7,40.9,37.2,33.7,30.4,26.1,22.1,18.3,14.6,11.2,7.8,3.8,0.0,};
 #endif
 
 
+    vuint8 *Image_Ptr;
+    uint16 Img_GAMvalue = 0;
+
+    uint8 ImageC[IMG_H][IMG_W];
 
 
-    vuint32 data,temp;
-    int32 tempa,tempb;
-    int32 tempc,tempd,tempe;
+    vuint8 data,temp;
+    int8 tempa,tempb;
     int16 row,col;											//行，列，也可用u v代替
     int16 u,v;
 
  /*以下部分为纵向扫描所用变量*/
 
-    uint8 edgeFillMode;
-
-//左右结束为止都为0<= x <160
-    int16 leftEdgeStart;  	//左边线检测的起始位置
-    int16 leftEdgeEnd;      //左边线检测的结束位置
-    int16 rightEdgeStart;	//右边线检测的起始位置
-    int16 rightEdgeEnd;		//右边线检测的结束位置
-
     int16 img_EdgeInfo[IMG_H][5] = {0};//图像边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
+
     int16 world_EdgeInfo[IMG_H][5] = {0};//世界边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
+
+    uint8 imgEdgeFill4[20][4];  //类型4 补线
+    uint8 imgEdgeFileStart;
+    uint8 imgEdgeFileEnd;
+    uint8 imgEdgeFill4Cnt;
+    int16 imgEdgeFill4Col,imgEdgeFill4Row;
+
+    uint8 edgeFillMode;
+
+    int16 leftEdgeStart;  		//左边线检测的起始位置
+    int16 leftEdgeEnd;      			//左边线检测的结束位置
+    int16 rightEdgeStart;	//右边线检测的起始位置
+    int16 rightEdgeEnd;		//右边线检测的结束位置
 
     int8 leftEdgeFind = 0,rightEdgeFind = 0;				//左右边界是否找到标志量
     int8 leftEdgeMissCnt = 0,rightEdgeMissCnt = 0;	//左右边界miss个数计数
     int8 leftEdgeBool = 1,rightEdgeBool = 1;				//左右边界
 
-    uint8 edgeOffset;
-    uint8 edgeBothMissCnt = 0;
-
-    uint8 leftLastLine[2],rightLastLine[2];
-    uint8 lastLine[2];
+    uint8 leftJPMissLine = 0,rightJPMissLine = 0;
+    uint8 leftLastLine[2] = {0},rightLastLine[2] = {0};
+    uint8 leftEdgeOffset,rightEdgeOffset;//左右限幅滤波变量
+    int8 edgeOffset;
 
     uint8 centerLine = CAMERA_W/2+1;        //最后的中线列位置记录变量
     uint8 lastCenterLine = 0;
-
 /*以下部分为横向扫描所用变量*/
 
     int16 img_ColEdgeInfo[IMG_W][6] = {0};//图像边界信息
@@ -62,10 +68,6 @@
 
     int16 world_ColEdgeInfo[IMG_W][6] = {0};//世界边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
-
-    uint16 imgEdgeFill4[20][4];  //类型4 补线
-    uint8 imgEdgeFill4Cnt;
-    int16 imgEdgeFill4Col,imgEdgeFill4Row;
 
     uint8 colEdgeEnable = 0;    //横向边界扫描使能变量 1：进行横向扫描 0：不进行
     uint8 colBool;              //是否获取到第一个横向扫描的点 标志位

@@ -1,7 +1,5 @@
-#include "DIY_ComDef.h"
+    #include "DIY_ComDef.h"
 #ifdef TZ_MCF52259_PIT
-
-#include "math.h"
 /*
 *****2015.4.21 PIT模块编写完毕
 *****功能：PIT可编程定时器模块进行定时
@@ -22,21 +20,12 @@
 6：do while 快于 while
 7：复杂运算都是用查表法
 */
-
-float SetSpeed;             //定义设定值
-float ActualSpeed;          //定义实际值
-float err;                  //定义偏差值
-float err_last;             //定义上一个偏差值
-float Kp,Ki,Kd;             //定义比例、积分、微分系数
-float voltage;              //定义电压值控制执行器的变量
-float integral;             //定义积分值
-
 void TPITx_Init(uint8 mode){
     switch(mode){
         default:case 0:{
             MCF_PIT0_PCSR = 0;
             //                 自动重载         计数为0中断         使能中断            立即载入PMR值       80000000 / 2^10 = 78125 2^11 = 39062 2^12=19531
-            MCF_PIT0_PCSR = MCF_PIT_PCSR_RLD | MCF_PIT_PCSR_PIF | MCF_PIT_PCSR_PIE | MCF_PIT_PCSR_OVW | MCF_PIT_PCSR_PRE(TPIT1_PRECLK);
+            MCF_PIT0_PCSR = MCF_PIT_PCSR_RLD | MCF_PIT_PCSR_PIF | MCF_PIT_PCSR_PIE | MCF_PIT_PCSR_OVW | MCF_PIT_PCSR_PRE(TPIT0_PRECLK);
             MCF_PIT0_PMR = TPIT0_ZQ * 1000;   //设置计数值
         	MCF_INTC0_IMRH &=~ MCF_INTC_IMRH_INT_MASK55;                //设置中断源号为55，实际位置为55+64
         	MCF_INTC0_ICR55 = MCF_INTC_ICR_IP(4) |MCF_INTC_ICR_IL(2);   //设置中断优先级
@@ -71,63 +60,19 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
     }
 
     if(rightMotorSpeed <allMotorCnt)
-        rightMotorSpeed-=5;
+        rightMotorCnt-=5;
     else
-        rightMotorSpeed+=5;
+        rightMotorCnt+=5;
     if(leftMotorSpeed <allMotorCnt)
-        leftMotorSpeed-=5;
+        leftMotorCnt-=5;
     else
-        leftMotorSpeed+=5;
+        leftMotorCnt+=5;
 
-    TPWM0_SetDTY((uint8)leftMotorSpeed);
-    TPWM1_SetDTY(rightMotorSpeed);
+    TPWM0_SetDTY(leftMotorCnt);
+    TPWM1_SetDTY(rightMotorCnt);
     TPWM45_SetDTY(pwmCnt);
 #elif 0
-    switch(controlMode){
-        case 3:{
-            pwmCnt = lineResSteerAngle*lineRealRate + 300/radiusOfCurva_1 + 200/radiusOfCurva_1 ;
-            allMotorCnt = 5000;
-        }break;
-        case 2:{
-            pwmCnt = lineResSteerAngle*5*lineRealRate + 300/radiusOfCurva_1;
-            allMotorCnt = 3000;
-        }break;
-        case 1:{
-            pwmCnt = lineResSteerAngle*11*lineRealRate;
-            allMotorCnt = 1000;
-        }break;
-    }
-
-    leftMotorSpeed = leftMotorCnt * leftMotorBase * 12.5;
-    rightMotorSpeed = righttMotorCnt * rightMotorBase * 12.5;
-    tanValue = tan();
-    motorCnt =(leftMotorCnt/(1-30/40*tanValue) + rightMotorCnt/(1-30/40*tanValue))*0.5;
-    motorSpeed = ;
-
-    SetSpeed = rightMotorSpeed;
-    err = SetSpeed - ActualSpeed;
-    integral += err;
-    voltage = Kp * err + Ki * integral + Kd * (err - err_last);
-    err_last = err;
-    ActualSpeed = voltage*1.0;
-
-
-    if(rightMotorSpeed <allMotorCnt)
-        rightMotorSpeed-=5;
-    else
-        rightMotorSpeed+=5;
-    if(leftMotorSpeed <allMotorCnt)
-        leftMotorSpeed-=5;
-    else
-        leftMotorSpeed+=5;
-
-    TPWM0_SetDTY(leftMotorSpeed);
-    TPWM1_SetDTY(rightMotorSpeed);
-    TPWM45_SetDTY(pwmCnt);
-
-
 #endif
-
     MCF_PIT0_PCSR &= ~MCF_PIT_PCSR_EN;
     MCF_PIT0_PCSR |= MCF_PIT_PCSR_PIF;  //清中断标志
 
@@ -147,10 +92,10 @@ unsigned int TZ_sqrt(uint16 x){
     return(ans);
 }
 */
-uint16 sqrt_16(unsigned int M)
+unsigned int sqrt_16(unsigned long M)
 {
-    int8 N, i;
-    unsigned int tmp, ttp;   // 结果、循环计数
+    unsigned int N, i;
+    unsigned long tmp, ttp;   // 结果、循环计数
     if (M == 0)               // 被开方数，开方结果也为0
         return 0;
     N = 0;
@@ -176,14 +121,6 @@ uint16 sqrt_16(unsigned int M)
         }
     }
     return N;
-}
-int16 length(int a,int b){
-    if(a==0){
-        return (uint8)(b>0?b:(-b));
-    }else if(b==0){
-        return (uint8)(a>0?a:(-a));
-    }
-
 }
 
 void TPIT1_interrupt2(void){
@@ -224,7 +161,7 @@ void TPIT1_interrupt2(void){
         for(col = 0;col < 19; col++){
             Image_Ptr[Image_Row[row] * 20 + col] = Image[Image_Row[row]][col + 1];
         }
-        Image_Ptr[Image_Row[row] * 20 + col] = (uint8)data;
+        Image_Ptr[Image_Row[row] * 20 + col] = data;
     }
     for(u = 0; 0&&u<CAMERA_H;u++){
         for(v = 0;v<CAMERA_W_8;v++){
@@ -236,55 +173,55 @@ void TPIT1_interrupt2(void){
         ptr = &ImageC[u][1];
         for(v = 1;v < IMG_W_8; v++){
             data = Image[Image_Row[u]][v];
-            Image_Ptr[Image_Row[u] * 20 + v - 1] = (uint8)data;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            Image_Ptr[Image_Row[u] * 20 + v - 1] = data;
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
+            *ptr = data&0x80;
             ptr++;
         }
         data = Image[Image_Row[u]][0];
-        Image_Ptr[Image_Row[u] * 20 + v - 1] = (uint8)data;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        Image_Ptr[Image_Row[u] * 20 + v - 1] = data;
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
+        *ptr = data&0x80;
     }
 #endif
     MCF_PIT1_PCSR &= ~MCF_PIT_PCSR_EN;
@@ -300,55 +237,55 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
         ptr = &ImageC[u][1];
         for(v = 1;v < IMG_W_8; v++){
             data = Image[Image_Row[u]][v];
-            Image_Ptr[Image_Row[u] * 20 + v - 1] = (uint8)data;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            Image_Ptr[Image_Row[u] * 20 + v - 1] = data;
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
-            data=(uint8)(data<<1);
+            *ptr = data&0x80;
+            data=data<<1;
             ptr++;
-            *ptr = (uint8)(data&0x80);
+            *ptr = data&0x80;
             ptr++;
         }
         data = Image[Image_Row[u]][0];
-        Image_Ptr[Image_Row[u] * 20 + v - 1] = (uint8)data;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        Image_Ptr[Image_Row[u] * 20 + v - 1] = data;
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
-        data=(uint8)(data<<1);
+        *ptr = data&0x80;
+        data=data<<1;
         ptr++;
-        *ptr = (uint8)(data&0x80);
+        *ptr = data&0x80;
     }
 
 #if 1
@@ -358,11 +295,10 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
 
     leftEdgeBool = 1;rightEdgeBool = 1;			//左右边界
 
-    colEdgeEnable = 0;  //横向扫描使能
+    colEdgeEnable = 0;
 
-    edgeFillMode = 0;   //补线模式
+    edgeFillMode = 0;
     leftEdgeMissCnt = 0;rightEdgeMissCnt = 0;	//左右边界开始miss个数计数
-    edgeBothMissCnt = 0;    //左右边界都miss计数
 
     leftEdgeStart = IMG_W_HALF;  	//左边线检测的起始位置
     leftEdgeEnd = 0;      		    //左边线检测的结束位置
@@ -386,22 +322,13 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
         world_EdgeInfo[row][2] = 0;
         world_EdgeInfo[row][3] = 0;
         world_EdgeInfo[row][4] = 0;
-        edgeOffset = (uint8)(colCorrectTable[row]*2+1);
 
         //Image_Ptr[Image_Row[row] * 20 + leftEdgeStart/8] |= 1<<(7-leftEdgeStart&0x07);
         //Image_Ptr[Image_Row[row] * 20 + rightEdgeStart/8] |= 1<<(7-rightEdgeStart&0x07);
 
         if(ImageC[row][centerLine] == 0x80){    //若中间线为黑线，则表示检测到结尾
-            if(row>1&&ImageC[row-2][centerLine] != 0x80){
-                img_EdgeInfo[row][3] = 6;           //当前行类型置为6
-                img_EdgeInfo[row][2] = img_EdgeInfo[row+1][2];
-                img_EdgeInfo[row-1][2] = img_EdgeInfo[row+1][2];
-                row--;
-                continue;
-            }else{
-                img_EdgeInfo[row][3] = 5;           //当前行类型置为5并结束循环
-                break;
-            }
+            img_EdgeInfo[row][3] = 5;           //当前行类型置为5并结束循环
+            break;
         }
         for(col = leftEdgeStart;col>leftEdgeEnd;col--){     //左边线寻找
             if((ImageC[row][col]&0x80) && ImageC[row][col+1] == 0 ){
@@ -409,8 +336,8 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 world_EdgeInfo[row][0] = correctTable[row][col];    //获取世界边界信息
 
                 //更新最后的左边线的行列
-                leftLastLine[0] = (uint8)row;
-                leftLastLine[1] = (uint8)col;
+                leftLastLine[0] = row;
+                leftLastLine[1] = col;
 
                 leftEdgeFind = 1;   //左边线标志量置位
                 break;
@@ -424,8 +351,8 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 world_EdgeInfo[row][1] = correctTable[row][col];    //获取世界边界信息
 
                 //更新最后的右边线的行列
-                rightLastLine[0] = (uint8)row;
-                rightLastLine[1] = (uint8)col;
+                rightLastLine[0] = row;
+                rightLastLine[1] = col;
 
                 rightEdgeFind = 1;  //右边线标志量置位
                 break;
@@ -439,74 +366,49 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
         	img_EdgeInfo[row][2] = (img_EdgeInfo[row][0] + img_EdgeInfo[row][1])*0.5;       //求取图像坐标中线
         	world_EdgeInfo[row][2] = (world_EdgeInfo[row][0] + world_EdgeInfo[row][1])*0.5; //求取世界坐标中线
 
-        	centerLine = (uint8)img_EdgeInfo[row][2];  //上次中线置为图像坐标中线
+        	centerLine = img_EdgeInfo[row][2];  //上次中线置为图像坐标中线
 
         	//Image_Ptr[Image_Row[row] * 20 + img_EdgeInfo[row][2]/8] |= 1<<(7-img_EdgeInfo[row][2]&0x07);
         	//Image_Ptr[Image_Row[row] * 20 + world_EdgeInfo[row][2]/8] |= 1<<(7-world_EdgeInfo[row][2]&0x07);
 
-            leftEdgeStart =   (uint8)(img_EdgeInfo[row][0] + edgeOffset);    //改变下一行左边线搜寻开始位置
-            leftEdgeEnd   =   (uint8)(img_EdgeInfo[row][0] - edgeOffset);    //改变下一行左边线搜寻结束位置
-            rightEdgeStart =  (uint8)(img_EdgeInfo[row][1] - edgeOffset);    //改变下一行右边线搜寻开始位置
-            rightEdgeEnd  =   (uint8)(img_EdgeInfo[row][1] + edgeOffset);    //改变下一行右边线搜寻结束位置
+            leftEdgeStart =   img_EdgeInfo[row][0] + 15;    //改变下一行左边线搜寻开始位置
+            leftEdgeEnd   =   img_EdgeInfo[row][0] - 5;    //改变下一行左边线搜寻结束位置
+            rightEdgeStart =  img_EdgeInfo[row][1] - 15;    //改变下一行右边线搜寻开始位置
+            rightEdgeEnd  =   img_EdgeInfo[row][1] + 5;    //改变下一行右边线搜寻结束位置
 
             img_EdgeInfo[row][3] = 1;   //中线类型设为 左中右都可用
 
 
         }else if(leftEdgeFind){
+            //temp = rightLastLine[1];
 
         	//img_EdgeInfo[row][2] = (img_EdgeInfo[row][0] + temp)*0.5;
         	//world_EdgeInfo[row][2] = (world_EdgeInfo[row][0] + world_EdgeInfo[temp][1])*0.5;
 
-        	if(edgeBothMissCnt){
-                img_EdgeInfo[row][3] = 4;   //中线类型设为 右可用
-        	}else{
-        	    img_EdgeInfo[row][2] = img_EdgeInfo[row][0] + colCorrectTable[row]*12;   //获取世界边界信息根据真实世界赛道宽度获取中线
-                world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];       //获取世界边界信息
+            leftEdgeStart = img_EdgeInfo[row][0] + 15;    //改变下一行左边线搜寻开始位置
+            leftEdgeEnd =   img_EdgeInfo[row][0] - 5;    //改变下一行左边线搜寻结束位置
 
-                centerLine = (uint8)img_EdgeInfo[row][2];
-                rightEdgeStart = centerLine;
+            img_EdgeInfo[row][3] = 2;   //中线类型设为 左可用
 
-                //if(img_EdgeInfo[row][2]<IMG_W)  //根据情况是否显示到图像数组中
-                //    Image_Ptr[Image_Row[row] * 20 + (uint8)(img_EdgeInfo[row][2]/8)] |= 1<<(7-img_EdgeInfo[row][2]&0x07);
-
-                leftEdgeStart = (uint8)(img_EdgeInfo[row][0] + edgeOffset);    //改变下一行左边线搜寻开始位置
-                leftEdgeEnd =   (uint8)(img_EdgeInfo[row][0] - edgeOffset);    //改变下一行左边线搜寻结束位置
-
-                img_EdgeInfo[row][3] = 2;   //中线类型设为 左可用
-
-                leftEdgeMissCnt++;
-            }
+            leftEdgeMissCnt++;
 
         }else if(rightEdgeFind){
             //temp = leftLastLine[1];
 
         	//img_EdgeInfo[row][2] = (img_EdgeInfo[row][1] + leftLastLine[1])*0.5;
         	//world_EdgeInfo[row][2] = (world_EdgeInfo[temp][0] + world_EdgeInfo[row][1])*0.5;
-        	if(edgeBothMissCnt){
-                img_EdgeInfo[row][3] = 4;   //中线类型设为 右可用
-        	}else{
-                img_EdgeInfo[row][2] = img_EdgeInfo[row][1] - colCorrectTable[row]*12;   //获取世界边界信息根据真实世界赛道宽度获取中线
-                world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];       //获取世界边界信息
 
-                centerLine = (uint8)img_EdgeInfo[row][2];
-                leftEdgeStart = centerLine;
+            rightEdgeStart = img_EdgeInfo[row][1] - 15;     //改变下一行右边线搜寻开始位置
+            rightEdgeEnd =   img_EdgeInfo[row][1] + 5;     //改变下一行右边线搜寻结束位置
 
+            img_EdgeInfo[row][3] = 3;   //中线类型设为 右可用
 
-                //if(img_EdgeInfo[row][2]>=0)      //根据情况是否显示到图像数组中
-                //    Image_Ptr[Image_Row[row] * 20 + (uint8)(img_EdgeInfo[row][2]/8)] |= 1<<(7-img_EdgeInfo[row][2]&0x07);
-
-                rightEdgeStart = (uint8)(img_EdgeInfo[row][1] - edgeOffset);     //改变下一行右边线搜寻开始位置
-                rightEdgeEnd =   (uint8)(img_EdgeInfo[row][1] + edgeOffset);     //改变下一行右边线搜寻结束位置
-
-                img_EdgeInfo[row][3] = 3;   //中线类型设为 右可用
-                rightEdgeMissCnt++;
-            }
-
+            rightEdgeMissCnt++;
 
         }else{
             leftEdgeStart = centerLine;     //重置下一行左边线搜寻开始位置
-            rightEdgeStart = (uint8)(centerLine+1);  //重置下一行右边线搜寻开始位置
-            edgeBothMissCnt = 1;
+            rightEdgeStart = centerLine+1;  //重置下一行右边线搜寻开始位置
+
             /*
             if(leftEdgeStart-leftEdgeEnd>15)
                 leftEdgeEnd++;
@@ -535,30 +437,23 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
         }
         if(leftEdgeEnd < 0){
             leftEdgeEnd = 0;
-            leftEdgeStart = (uint8)(leftEdgeEnd + 20);
+            leftEdgeStart = leftEdgeEnd + 20;
         }
         if(rightEdgeEnd >= CAMERA_W){
             rightEdgeEnd = CAMERA_W - 1;
-            rightEdgeStart = (uint8)(rightEdgeEnd - 20);
+            rightEdgeStart = rightEdgeEnd - 20;
         }
 
         leftEdgeFind = 0;   //左标志位清零
         rightEdgeFind = 0;  //右标志位清零
 
     }
-    img_EdgeInfo[0][3] = 5;
+
 #endif
 #if 1
     imgEdgeFill4Cnt = 0;
     imgEdgeFill4[imgEdgeFill4Cnt][0] = 0;
     imgEdgeFill4[imgEdgeFill4Cnt][2] = 0;
-    if(leftLastLine[0]<rightLastLine[0]){
-        lastLine[0] = leftLastLine[0];
-        lastLine[1] = rightLastLine[0];
-    }else{
-        lastLine[1] = leftLastLine[0];
-        lastLine[0] = rightLastLine[0];
-    }
     for(row = IMG_H-2;row>0;row--){     //中线处理循环
 
         if(img_EdgeInfo[row-1][2]&&img_EdgeInfo[row+1][2]){     //对三边线都可用时进行边线滤波
@@ -567,48 +462,50 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];               //重新获取获取世界边界信息
 
             edgeFillMode = 1;
-            lastCenterLine = (uint8)img_EdgeInfo[row][2];
-        }else if(0&&edgeFillMode && img_EdgeInfo[row][3] == 2 || img_EdgeInfo[row][3] == 3){   //对一边线可用时进行中线补线
+            lastCenterLine = img_EdgeInfo[row][2];
+        }else if(edgeFillMode && img_EdgeInfo[row][3] == 2 || img_EdgeInfo[row][3] == 3){   //对一边线可用时进行中线补线
             if(img_EdgeInfo[row][3] == 2){
                 //temp = world_EdgeInfo[row][1];
-                img_EdgeInfo[row][2] = img_EdgeInfo[row][0] + colCorrectTable[row]*14;   //获取世界边界信息根据真实世界赛道宽度获取中线
-                world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];       //获取世界边界信息
+                img_EdgeInfo[row][2] = img_EdgeInfo[row][0] + colCorrectTable[row]*14;   //获取获取世界边界信息根据真实世界赛道宽度获取中线
+                world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];       //获取获取世界边界信息
 
                 if(img_EdgeInfo[row][2]<IMG_W)  //根据情况是否显示到图像数组中
                     Image_Ptr[Image_Row[row] * 20 + (uint8)(img_EdgeInfo[row][2]/8)] |= 1<<(7-img_EdgeInfo[row][2]&0x07);
 
             }else if(img_EdgeInfo[row][3] == 3){
                 //temp = world_EdgeInfo[row][2];
-                img_EdgeInfo[row][2] = img_EdgeInfo[row][1] - colCorrectTable[row]*14;   //获取世界边界信息根据真实世界赛道宽度获取中线
-                world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];       //获取世界边界信息
+                img_EdgeInfo[row][2] = img_EdgeInfo[row][1] - colCorrectTable[row]*14;   //获取获取世界边界信息根据真实世界赛道宽度获取中线
+                world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];       //获取获取世界边界信息
 
-                if(img_EdgeInfo[row][2]>=0)      //根据情况是否显示到图像数组中
+                if(img_EdgeInfo[row][2]>0)      //根据情况是否显示到图像数组中
                     Image_Ptr[Image_Row[row] * 20 + (uint8)(img_EdgeInfo[row][2]/8)] |= 1<<(7-img_EdgeInfo[row][2]&0x07);
 
             }
         }else if(img_EdgeInfo[row][3] == 4){    //对三边线都不可用时进行记录，以便判断是否需要补线
             if(!imgEdgeFill4[imgEdgeFill4Cnt][0]){  //记录起始位置
                 if(img_EdgeInfo[row+1][3]!=4){
-                    imgEdgeFill4[imgEdgeFill4Cnt][0] = (uint8)(row+1);
-                    imgEdgeFill4[imgEdgeFill4Cnt][1] = (uint8)img_EdgeInfo[row+1][2];
-                }else if(row >= IMG_H-2){       //开始边界情况
+                    imgEdgeFill4[imgEdgeFill4Cnt][0] = row+1;
+                    imgEdgeFill4[imgEdgeFill4Cnt][1] = img_EdgeInfo[row+1][2];
+                }
+                if(row >= IMG_H-2){       //开始边界情况
                     imgEdgeFill4[imgEdgeFill4Cnt][0] = IMG_H-2;
                     imgEdgeFill4[imgEdgeFill4Cnt][1] = IMG_W_HALF;
                 }
             }else if(!imgEdgeFill4[imgEdgeFill4Cnt][2]){
                 if(img_EdgeInfo[row-1][3]!=4){
-                    imgEdgeFill4[imgEdgeFill4Cnt][2] = (uint8)(row-1);
+                    imgEdgeFill4[imgEdgeFill4Cnt][2] = row-1;
                     //imgEdgeFill4[imgEdgeFill4Cnt][3] = img_EdgeInfo[row-1][2];
 
                     imgEdgeFill4Cnt++;
                     imgEdgeFill4[imgEdgeFill4Cnt][0] = 0;
                     imgEdgeFill4[imgEdgeFill4Cnt][2] = 0;
-                }else if(row <=1){              //结束边界情况
+                }
+                if(row <=1){              //结束边界情况
                     imgEdgeFill4[imgEdgeFill4Cnt][2] = 1;
                     imgEdgeFill4[imgEdgeFill4Cnt][3] = IMG_W_HALF;
 
                     imgEdgeFill4Cnt++;
-                    imgEdgeFill4[imgEdgeFill4Cnt][0] = 0;//下一个值初始化为0
+                    imgEdgeFill4[imgEdgeFill4Cnt][0] = 0;
                     imgEdgeFill4[imgEdgeFill4Cnt][2] = 0;
                 }
             }
@@ -617,11 +514,10 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             if(leftLastLine[0] > rightLastLine[0]){
                 v = leftLastLine[1];
                 u = (leftLastLine[0]+row)*0.5;
-                img_EdgeInfo[u][3] = 7;
                 topEdgeStart = u;
                 bottomEdgeStart = u;
-                topEdgeEnd = (uint8)(row - 5);
-                bottomEdgeEnd = (uint8)(leftLastLine[0] + 5);
+                topEdgeEnd = row - 5;
+                bottomEdgeEnd = leftLastLine[0] + 5;
                 direct = -1;
                 colEnd = 0;
                 colEdgeEnable = 1;
@@ -629,11 +525,10 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             }else if(leftLastLine[0] < rightLastLine[0]){
                 v = rightLastLine[1];
                 u = (rightLastLine[0]+row)*0.5;
-                img_EdgeInfo[u][3] = 7;
                 topEdgeStart = u;
                 bottomEdgeStart = u;
-                topEdgeEnd = (uint8)(row - 5);
-                bottomEdgeEnd = (uint8)(rightLastLine[0] + 5);
+                topEdgeEnd = row - 5;
+                bottomEdgeEnd = rightLastLine[0] + 5;
                 direct = 1;
                 colEnd = IMG_W-1;
                 colEdgeEnable = 1;
@@ -649,16 +544,16 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
 #if 1
     while(imgEdgeFill4Cnt){
         imgEdgeFill4Cnt--;
-        temp = imgEdgeFill4[imgEdgeFill4Cnt][1];
+        v = imgEdgeFill4[imgEdgeFill4Cnt][1];
 
-        imgEdgeFill4Row = (int8)(imgEdgeFill4[imgEdgeFill4Cnt][0] - imgEdgeFill4[imgEdgeFill4Cnt][2]);
+        imgEdgeFill4Row = imgEdgeFill4[imgEdgeFill4Cnt][0] - imgEdgeFill4[imgEdgeFill4Cnt][2];
         if(imgEdgeFill4[imgEdgeFill4Cnt][2]==1)
-                imgEdgeFill4Col = (int8)(imgEdgeFill4[imgEdgeFill4Cnt][1] - imgEdgeFill4[imgEdgeFill4Cnt][3]);
+                imgEdgeFill4Col = imgEdgeFill4[imgEdgeFill4Cnt][1] - imgEdgeFill4[imgEdgeFill4Cnt][3];
         else
-                imgEdgeFill4Col = (int8)(img_EdgeInfo[imgEdgeFill4[imgEdgeFill4Cnt][2]][2] - imgEdgeFill4[imgEdgeFill4Cnt][1]);
+                imgEdgeFill4Col = img_EdgeInfo[imgEdgeFill4[imgEdgeFill4Cnt][2]][2] - imgEdgeFill4[imgEdgeFill4Cnt][1];
 
         for(row = imgEdgeFill4[imgEdgeFill4Cnt][0] ;row > imgEdgeFill4[imgEdgeFill4Cnt][2] ;row--){
-        	img_EdgeInfo[row][2] = (uint16)(temp + ((float)(imgEdgeFill4[imgEdgeFill4Cnt][0]  - row))/imgEdgeFill4Row * imgEdgeFill4Col);
+        	img_EdgeInfo[row][2] = (uint16)(v + ((float)(imgEdgeFill4[imgEdgeFill4Cnt][0]  - row))/imgEdgeFill4Row * imgEdgeFill4Col);
             world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];//获取世界边界信息
             Image_Ptr[Image_Row[row] * 20 + (uint8)(img_EdgeInfo[row][2]/8)] |= 1<<(7-img_EdgeInfo[row][2]&0x07);
 
@@ -671,7 +566,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
     if(colEdgeEnable)
     {
         colEdgeCnt = 0;
-        colCenterLine = (uint8)u;
+        colCenterLine = u;
         colBool = 0;
 
         for(col = v;col!=colEnd;col+=direct){
@@ -722,7 +617,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 world_ColEdgeInfo[colEdgeCnt][2] = correctTable[img_ColEdgeInfo[colEdgeCnt][2]][col];//获取世界边界信息
 
         	    Image_Ptr[Image_Row[img_ColEdgeInfo[colEdgeCnt][2]] * 20 + (uint8)(img_ColEdgeInfo[colEdgeCnt][5]/8)] |= 1<<(7-img_ColEdgeInfo[colEdgeCnt][5]&0x07);
-                colCenterLine = (uint8)img_ColEdgeInfo[colEdgeCnt][2];
+                colCenterLine = img_ColEdgeInfo[colEdgeCnt][2];
 
                 if(colBool == 0){
                     firstRow = img_ColEdgeInfo[colEdgeCnt][2];
@@ -730,25 +625,25 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                     colBool = 1;
                 }
 
-                topEdgeStart =   (uint8)(img_ColEdgeInfo[colEdgeCnt][0] + 5);
-                topEdgeEnd   =   (uint8)(img_ColEdgeInfo[colEdgeCnt][0] - 5);
-                bottomEdgeStart =  (uint8)(img_ColEdgeInfo[colEdgeCnt][1] - 5);
-                bottomEdgeEnd  =   (uint8)(img_ColEdgeInfo[colEdgeCnt][1] + 5);
+                topEdgeStart =   img_ColEdgeInfo[colEdgeCnt][0] + 5;
+                topEdgeEnd   =   img_ColEdgeInfo[colEdgeCnt][0] - 5;
+                bottomEdgeStart =  img_ColEdgeInfo[colEdgeCnt][1] - 5;
+                bottomEdgeEnd  =   img_ColEdgeInfo[colEdgeCnt][1] + 5;
 
                 img_ColEdgeInfo[colEdgeCnt][3] = 1;
 
                 colEdgeCnt++;
             }else if(topEdgeFind){
-                topEdgeStart =   (uint8)(img_ColEdgeInfo[colEdgeCnt][0] + 5);
-                topEdgeEnd   =   (uint8)(img_ColEdgeInfo[colEdgeCnt][0] - 5);
+                topEdgeStart =   img_ColEdgeInfo[colEdgeCnt][0] + 5;
+                topEdgeEnd   =   img_ColEdgeInfo[colEdgeCnt][0] - 5;
                 bottomEdgeStart = topEdgeStart;
 
                 img_ColEdgeInfo[colEdgeCnt][3] = 2;
 
                 colEdgeCnt++;
             }else if(bottomEdgeFind){
-                bottomEdgeStart =  (uint8)(img_ColEdgeInfo[colEdgeCnt][1] - 5);
-                bottomEdgeEnd  =   (uint8)(img_ColEdgeInfo[colEdgeCnt][1] + 5);
+                bottomEdgeStart =  img_ColEdgeInfo[colEdgeCnt][1] - 5;
+                bottomEdgeEnd  =   img_ColEdgeInfo[colEdgeCnt][1] + 5;
                 topEdgeStart = bottomEdgeStart;
 
                 img_ColEdgeInfo[colEdgeCnt][3] = 3;
@@ -767,25 +662,25 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             }
             if(topEdgeEnd < 0){
                 topEdgeEnd = 0;
-                topEdgeStart = (uint8)(topEdgeEnd + 10);
+                topEdgeStart = topEdgeEnd + 10;
             }
             if(bottomEdgeEnd >= 40){
                 bottomEdgeEnd = 40;
-                bottomEdgeStart = (uint8)(bottomEdgeEnd - 10);
+                bottomEdgeStart = bottomEdgeEnd - 10;
             }
 
             topEdgeFind = 0;
             bottomEdgeFind = 0;
 
         }
-            //sprintf(TXBuffer,"[%u]",colEdgeEnable);
-            //TUart0_Puts(TXBuffer);
+            sprintf(TXBuffer,"[%u]",colEdgeEnable);
+            TUart0_Puts(TXBuffer);
 
         if(colBool){
 
             if(direct == 1){
-                temp = (uint8)(rightLastLine[0] - firstRow);
-                data = (uint8)(firstCol - img_EdgeInfo[rightLastLine[0]][2]);
+                temp = rightLastLine[0] - firstRow;
+                data = firstCol - img_EdgeInfo[rightLastLine[0]][2];
                 //sprintf(TXBuffer,"[%d+%d]",temp,data);
                 //TUart0_Puts(TXBuffer);
                 for(row = rightLastLine[0];row >= rightLastLine[0]-temp;row--){
@@ -797,8 +692,8 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                     //TUart0_Puts(TXBuffer);
                 }
             }else{
-                temp = (uint8)(leftLastLine[0] - firstRow);
-                data = (uint8)(img_EdgeInfo[rightLastLine[0]][2] - firstCol);
+                temp = leftLastLine[0] - firstRow;
+                data = img_EdgeInfo[rightLastLine[0]][2] - firstCol;
                 for(row = leftLastLine[0];row>topEdgeEnd;row--){
                 	img_EdgeInfo[row][2] = (uint16)(img_EdgeInfo[leftLastLine[0]][2] + ((float)(leftLastLine[0] - row))/(temp+1) * data);
                     world_EdgeInfo[row][2] = correctTable[row][img_EdgeInfo[row][2]];//获取世界边界信息
@@ -831,28 +726,21 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
     tp2ColCnt = 0;
 
     for(row = IMG_H-1;controlError == 0&&controlFinsh == 0&&row>0;row --){
-        if(img_EdgeInfo[row][3] == 5 || img_EdgeInfo[row][3] == 7)
+        if(img_EdgeInfo[row][3] == 5 )
             rowBreak = 1;
         switch(controlMode){
             case 0:{
-                //if(rowBreak == 0 && img_EdgeInfo[row][2] != 0){
-                if(rowBreak == 0){
-                    temp = (uint8)(img_EdgeInfo[row][2] - IMG_W_HALF + centLineOffset);
+                if(rowBreak == 0 && img_EdgeInfo[row][2] != 0){
+                    temp = img_EdgeInfo[row][2] - IMG_W_HALF + centLineOffset;
                     if(temp < (centLineOffset<<1)){
-                        lineOffsetRow = (uint8)row;
+                        lineOffsetRow = row;
                         lineOffsetCnt ++;
                         lineOffsetValueCnt += (temp - centLineOffset);
                     }else{
-                        lineOffsetRow = (uint8)row;
+                        lineOffsetRow = row;
                         lineOffsetCnt ++;
 
-
                         controlMode++;    //改变控制方式
-
-                        if(lineOffsetRow < 15){
-                            controlFinsh = 1;
-                            break;
-                        }
 
                         threePoint[1][0] = 0;
                         threePoint[2][0] = 0;
@@ -861,6 +749,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                         threePoint[0][1] = img_EdgeInfo[row][2];
                         tpStartDist = world_ActualRange[row];
 
+
                     }
                 }else if(rowBreak){
                     controlError = 1;
@@ -868,16 +757,12 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 }
             }break;
             case 1:{
-                //if(img_EdgeInfo[row][2] != 0){
-                if(rowBreak == 0){
+                if(lineOffsetRow < 20)
+                    break;
+                if(img_EdgeInfo[row][2] != 0){
                     threePoint[2][0] = row;
                     threePoint[2][1] = img_EdgeInfo[row][2];
                     if( (world_ActualRange[row] - tpStartDist) > 80){
-
-                        //由于补线完成，所以可以直接读中间那条线，而不需要用循环找线
-                        threePoint[1][0] =  (threePoint[2][0] + threePoint[0][0])*0.5;
-                        threePoint[1][1] = img_EdgeInfo[threePoint[1][0]][2];
-                        /*
                         midThreePointCol1 = (threePoint[2][0] + threePoint[0][0])*0.5;
                         midThreePointCol2 = midThreePointCol1+1;
                         do{
@@ -899,10 +784,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                         if(midThreePointCol1 == threePoint[2][0] || midThreePointCol2 == threePoint[0][0]){
                             controlError = 2;
                             break;
-                        }else
-                        */
-
-                        if(world_ActualRange[row]<160){
+                        }else if(world_ActualRange[row]<150){
                             threePoint2[1][0] = 0;
                             threePoint2[2][0] = 0;
 
@@ -914,11 +796,6 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                         }
                     }
                 }else if(rowBreak){
-                    threePoint[1][0] =  (threePoint[2][0] + threePoint[0][0])*0.5;
-                    threePoint[1][1] = img_EdgeInfo[threePoint[1][0]][2];
-
-                    /*
-
                     if(threePoint[2][0] != 0){
                         midThreePointCol1 = (threePoint[2][0] + threePoint[0][0])*0.5;
                         midThreePointCol2 = midThreePointCol1+1;
@@ -943,29 +820,18 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                             break;
                         }
                     }
-                    */
-
-                    if(world_ActualRange[row]<160){
-                        threePoint2[1][0] = 0;
-                        threePoint2[2][0] = 0;
-
-                        threePoint2[0][0] = row;//赋值三点数组
-                        threePoint2[0][1] = img_EdgeInfo[row][2];
-                        controlMode ++;
-                    }else{
-                        controlFinsh = 1;
-                    }
+                    break;
                 }
             }break;
             case 2:{
                 tp2RowCnt++;
-                if(rowBreak == 0){
+                if(img_EdgeInfo[row][2] != 0){
                     threePoint2[2][0] = row;
                     threePoint2[2][1] = img_EdgeInfo[row][2];
                 }else if(rowBreak){
                     temp = 0;
                     if(img_ColEdgeInfo[temp][2] != 0){
-                        while(img_ColEdgeInfo[temp][2] !=0 && img_ColEdgeInfo[temp][3] !=5){
+                        while(img_ColEdgeInfo[temp][2] !=0 && img_ColEdgeInfo[temp][2] !=5){
                             tp2ColCnt++;
                             temp++;
                         }
@@ -987,7 +853,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                         }
                     }else{
                         midThreePoint2Col1 = (threePoint2[2][0] + threePoint2[0][0])*0.5;
-                        midThreePoint2Col2 = (uint8)(midThreePoint2Col1+1);
+                        midThreePoint2Col2 = midThreePoint2Col1+1;
                         do{
                             if(img_EdgeInfo[midThreePoint2Col1][2] != 0){
                                 threePoint2[1][0] = midThreePoint2Col1;
@@ -1019,91 +885,76 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
     }
 #endif
 #if 1
-    if(controlMode >=3){
-        tempa = threePoint2[0][0];
-        tempb = threePoint2[0][1];
-        tempe = ((threePoint2[1][0]-tempa)*(threePoint2[2][1]-tempb) - (threePoint2[2][0]-tempa)*(threePoint2[1][1]-tempb))*0.5;
-        if(tempe == 0){
-            controlMode = 2;
-        }else{
-            tempc = (int16)(threePoint2[1][0] - threePoint2[0][0]);
-            tempd = (int16)(threePoint2[1][1] - threePoint2[0][1]);
-            threePoint2[0][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            //sprintf(TXBuffer,"%u\n",tempc*tempc+tempd*tempd);
-            //TUart0_Puts(TXBuffer);
-            tempc = (int16)(threePoint2[2][0] - threePoint2[1][0]);
-            tempd = (int16)(threePoint2[2][1] - threePoint2[1][1]);
-            threePoint2[1][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            //sprintf(TXBuffer,"%u\n",tempc*tempc+tempd*tempd);
-            //TUart0_Puts(TXBuffer);
-            tempc = (int16)(threePoint2[2][0] - threePoint2[0][0]);
-            tempd = (int16)(threePoint2[2][1] - threePoint2[0][1]);
-            threePoint2[2][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            //sprintf(TXBuffer,"%u\n",tempc*tempc+tempd*tempd);
-            //TUart0_Puts(TXBuffer);
+    switch(controlMode){
+        case 3:{
+            tempa = threePoint2[0][0];
+            tempb = threePoint2[0][1];
+            temp = ((threePoint2[1][0]-tempa)*(threePoint2[2][1]-tempb) - (threePoint2[2][0]-tempa)*(threePoint2[1][1]-tempb))*0.5;
+            if(temp == 0){
+                controlMode = 2;
+                break;
+            }
+            tempa = threePoint2[1][0] - threePoint2[0][0];
+            tempb = threePoint2[1][1] - threePoint2[0][1];
+            threePoint2[0][2] = sqrt_16(tempa*tempa+tempb*tempb);
+            tempa = threePoint2[2][0] - threePoint2[1][0];
+            tempb = threePoint2[2][1] - threePoint2[1][1];
+            threePoint2[1][2] = sqrt_16(tempa*tempa+tempb*tempb);
+            tempa = threePoint2[2][0] - threePoint2[0][0];
+            tempb = threePoint2[2][1] - threePoint2[0][1];
+            threePoint2[2][2] = sqrt_16(tempa*tempa+tempb*tempb);
 
-            radiusOfCurva_2 = (float)(threePoint2[0][2] * threePoint2[1][2] * threePoint2[2][2] / tempe * 0.25);
+            radiusOfCurva_2 = threePoint2[0][2] * threePoint2[1][2] * threePoint2[2][2] / temp * 0.25;
             //tp2ResSteerAngle = 90 / radiusOfCurva_2;
         }
-    }
-    if(controlMode >=2){
-        //TUart0_Putchar('G');
-        tempa = threePoint[0][0];
-        tempb = threePoint[0][1];
-        tempe = ((threePoint[1][0]-tempa)*(threePoint[2][1]-tempb) - (threePoint[2][0]-tempa)*(threePoint[1][1]-tempb))*0.5;
-        if(tempe <= 1){
-            tempe = ((threePoint[1][0]-IMG_W_HALF)*(threePoint[2][1]-tempb) - (threePoint[2][0]-IMG_W_HALF)*(threePoint[1][1]-tempb))*0.5;
-            tempc = threePoint[1][0] - IMG_W_HALF;
-            tempd = threePoint[1][1] - threePoint[0][1];
-            threePoint[0][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            tempc = threePoint[2][0] - threePoint[1][0];
-            tempd = threePoint[2][1] - threePoint[1][1];
-            threePoint[1][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            tempc = threePoint[2][0] - IMG_W_HALF;
-            tempd = threePoint[2][1] - threePoint[0][1];
-            threePoint[2][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-        }else{
-            tempc = threePoint[1][0] - threePoint[0][0];
-            tempd = threePoint[1][1] - threePoint[0][1];
-            threePoint[0][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            //sprintf(TXBuffer,"%u\n",tempc*tempc+tempd*tempd);
-            //TUart0_Puts(TXBuffer);
-            tempc = threePoint[2][0] - threePoint[1][0];
-            tempd = threePoint[2][1] - threePoint[1][1];
-            threePoint[1][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            //sprintf(TXBuffer,"%u\n",tempc*tempc+tempd*tempd);
-            //TUart0_Puts(TXBuffer);
-            tempc = threePoint[2][0] - threePoint[0][0];
-            tempd = threePoint[2][1] - threePoint[0][1];
-            threePoint[2][2] = (int16)sqrt_16(tempc*tempc+tempd*tempd);
-            //sprintf(TXBuffer,"%u\n",tempc*tempc+tempd*tempd);
-            //TUart0_Puts(TXBuffer);
+        case 2:{
+            tempa = threePoint[0][0];
+            tempb = threePoint[0][1];
+            temp = ((threePoint[1][0]-tempa)*(threePoint[2][1]-tempb) - (threePoint[2][0]-tempa)*(threePoint[1][1]-tempb))*0.5;
+            if(temp <= 1){
+                temp = ((threePoint[1][0]-IMG_W_HALF)*(threePoint[2][1]-tempb) - (threePoint[2][0]-IMG_W_HALF)*(threePoint[1][1]-tempb))*0.5;
+                tempa = threePoint[1][0] - IMG_W_HALF;
+                tempb = threePoint[1][1] - threePoint[0][1];
+                threePoint[0][2] = sqrt_16(tempa*tempa+tempb*tempb);
+                tempa = threePoint[2][0] - threePoint[1][0];
+                tempb = threePoint[2][1] - threePoint[1][1];
+                threePoint[1][2] = sqrt_16(tempa*tempa+tempb*tempb);
+                tempa = threePoint[2][0] - IMG_W_HALF;
+                tempb = threePoint[2][1] - threePoint[0][1];
+                threePoint[2][2] = sqrt_16(tempa*tempa+tempb*tempb);
+            }else{
+                tempa = threePoint[1][0] - threePoint[0][0];
+                tempb = threePoint[1][1] - threePoint[0][1];
+                threePoint[0][2] = sqrt_16(tempa*tempa+tempb*tempb);
+                tempa = threePoint[2][0] - threePoint[1][0];
+                tempb = threePoint[2][1] - threePoint[1][1];
+                threePoint[1][2] = sqrt_16(tempa*tempa+tempb*tempb);
+                tempa = threePoint[2][0] - threePoint[0][0];
+                tempb = threePoint[2][1] - threePoint[0][1];
+                threePoint[2][2] = sqrt_16(tempa*tempa+tempb*tempb);
 
+            }
+
+            radiusOfCurva_1 = threePoint[0][2] * threePoint[1][2] * threePoint[2][2] / temp*0.25;
+            //tpResSteerAngle = 90 / radiusOfCurva_1;
         }
+        case 1:{
+            if((50-lineOffsetRow-lineOffsetCnt)>5){
+                lineRealDis = world_ActualRange[lineOffsetRow];
+                lineRealRate = 50-lineOffsetRow;
 
-        radiusOfCurva_1 = (float)(threePoint[0][2] * threePoint[1][2] * threePoint[2][2] / tempe*0.25);
-        //tpResSteerAngle = 90 / radiusOfCurva_1;
-    }
-    if(controlMode >=1){
-        if((50-lineOffsetRow-lineOffsetCnt)>5){
-            lineRealDis = world_ActualRange[lineOffsetRow];
-            lineRealRate = (uint8)(50-lineOffsetRow);
-
-            lineResSteerAngle = (float)(28.647*(lineOffsetValueCnt/(lineRealRate+1)*colCorDisTable[lineOffsetRow])/lineRealDis);
-            //lineResSteerAngle = (float)(114.591*(lineOffsetValueCnt*colCorDisTable[50-lineOffsetCnt])/lineRealDis);
-        }else{
-            lineRealDis = world_ActualRange[50-lineOffsetCnt];
-            lineRealRate = lineOffsetCnt;
-
-            lineResSteerAngle = (float)(28.647*(lineOffsetValueCnt/(lineRealRate+1)*colCorDisTable[50-lineOffsetCnt])/lineRealDis);
-            //lineResSteerAngle = (float)(114.591*(lineOffsetValueCnt*colCorDisTable[50-lineOffsetCnt])/lineRealDis);
-
-        }
+                lineResSteerAngle = ((float)lineOffsetValueCnt/lineRealRate*colCorDisTable[lineOffsetRow])/lineRealDis*28.647;
+            }else{
+                lineRealDis = world_ActualRange[50-lineOffsetCnt];
+                lineRealRate = lineOffsetCnt;
+                lineResSteerAngle = ((float)lineOffsetValueCnt/lineRealRate*colCorDisTable[50-lineOffsetCnt])/lineRealDis*28.647;
+            }
+        }break;
     }
 #endif
     //TUart0_Puts("PIT1!\r\n");
-    bool = 0;
     MCF_PIT1_PCSR &= ~MCF_PIT_PCSR_EN;
     MCF_PIT1_PCSR |= MCF_PIT_PCSR_PIF;  //清中断标志
+    bool = 0;
 }
 #endif

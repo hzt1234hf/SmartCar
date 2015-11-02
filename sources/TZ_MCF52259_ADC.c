@@ -74,8 +74,8 @@ void TADC_Test(void){
 }
 
 __declspec(interrupt:0) void TADCA_interrupt(void){
-    //ADC0_Data = (MCF_ADC_ADRSLT0>>3)&0x0fff;
-    //Img_GAMvalue = ADC0_Data * (float)255/4095 - 30;
+    ADC0_Data = (MCF_ADC_ADRSLT0>>3)&0x0fff;
+    Img_GAMvalue = ADC0_Data * (float)255/4095 - 30;
     //ADC1_Data = (MCF_ADC_ADRSLT1>>3)&0x0fff;
     //ADC2_Data = (MCF_ADC_ADRSLT2>>3)&0x0fff;
     //sprintf(TXBuffer,"%u,%u--\r\n",ADC0_Data,Img_GAMvalue);

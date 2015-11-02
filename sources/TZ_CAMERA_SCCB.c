@@ -500,7 +500,7 @@ int SCCB_ReadByte_one(uint8 *pBuffer,   uint16 length,   uint8 ReadAddress)
     }
     while(length)
     {
-        *pBuffer = (uint8)SCCB_ReceiveByte();
+        *pBuffer = SCCB_ReceiveByte();
         if(length == 1)
         {
             SCCB_NoAck();
