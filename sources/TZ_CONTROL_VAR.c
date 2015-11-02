@@ -13,26 +13,63 @@ uint8 controlFinsh = 0;//
     3：三点求曲率1中线结束满足 中间点丢失错误
 */
 
-//近距离直线控制变量
+/*近距离直线控制变量*/
 
 uint8 centLineOffset = 5;
 uint8 lineOffsetCnt = 0;
 uint8 lineOffsetRow = 0;
 int16 lineOffsetValueCnt = 0;
 
-//中距离曲率1控制变量
+uint8 lineRealDis;
+uint8 lineRealRate;
 
-uint8 threePoint[3][2];
+float lineResSteerAngle;
+/*中距离曲率控制变量*/
+
+int threePoint[3][3];
 uint8 tpStartDist = 0;
 uint8 tpEndDist = 0;
 uint8 midThreePointCol1,midThreePointCol2;
-//远距离曲率1控制变量
 
-uint8 threePoint2[3][2];
+float radiusOfCurva_1;
+
+uint8 tpResSteerAngle;
+
+/*远距离曲率控制变量*/
+
+int threePoint2[3][3];
 uint8 tp2StartDist = 0;
 uint8 tp2EndDist = 0;
 uint8 midThreePoint2Col1,midThreePoint2Col2;
 uint8 tp2RowCnt = 0;
 uint8 tp2ColCnt = 0;
+
+float radiusOfCurva_2;
+
+uint8 tp2ResSteerAngle;
+
+/*总控制变量*/
+
+/*舵机相关变量*/
+uint16 pwmCnt;
+/*电机相关变量*/
+float leftMotorBase;
+float rightMotorBase;
+
+uint16 leftMSCnt,rightMSCnt;           //左右电机GPT值
+
+uint8 leftMotorSpeed;
+uint8 leftCnt,rightCnt;
+uint8 rightMotorSpeed;
+uint16 motorSpeed;
+float tanValue;
+
+uint16 leftMotorCnt[8];
+uint16 rightMotorCnt[8];
+uint16 motorCnt;
+
+uint16 allMotorCnt;
+
+/*PID相关变量*/
 
 #endif

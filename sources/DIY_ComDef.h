@@ -8,8 +8,7 @@
 #define EnableInterrupts() asm(move.w #0x2000,sr)
 //#define EnableInterrupts() asm { move.w SR,D0; andi.l #0xF8FF,D0; move.w D0,SR;  }
 
-extern vuint16 leftMSCnt,rightMSCnt;           //左右电机GPT值
-extern vuint16 leftMotorSpeed,rightMotorSpeed; //左右电机速度值
+extern uint32 sysOsciFre;
 
 #include "stdio.h"
 #include "TZ_CAMERA_VAR.h"
@@ -29,4 +28,3 @@ extern vuint16 leftMotorSpeed,rightMotorSpeed; //左右电机速度值
 #include "TZ_CAMERA_CONFIG.h"
 #include "TZ_MCF52259_ADC.h"
 
-extern uint8 sysOsciFre;

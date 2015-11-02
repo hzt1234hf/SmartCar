@@ -12,14 +12,13 @@
 void
 pll_init(void)
 {
-//MCF_CLOCK_CCHR =0x05; // The PLL pre divider - 48MHz / 6 = 8MHz 
-    /* The PLL pre-divider affects this!!! 
+//MCF_CLOCK_CCHR =0x05; // The PLL pre divider - 48MHz / 6 = 8MHz
+    /* The PLL pre-divider affects this!!!
              * Multiply 48Mhz reference crystal /CCHR by 10 to achieve system clock of 80Mhz
              */
+
     MCF_CLOCK_SYNCR = MCF_CLOCK_SYNCR_MFD(3) | MCF_CLOCK_SYNCR_CLKSRC| MCF_CLOCK_SYNCR_PLLMODE | MCF_CLOCK_SYNCR_PLLEN ;
-    while (!(MCF_CLOCK_SYNSR & MCF_CLOCK_SYNSR_LOCK))
-    {
-    }
+    while (!(MCF_CLOCK_SYNSR & MCF_CLOCK_SYNSR_LOCK)){}
 }
 
 /********************************************************************/
@@ -37,11 +36,11 @@ scm_init(void)
 void __initialize_hardware(void)
 {
 	/*******************************************************
-	*	Out of reset, the low-level assembly code calls this 
+	*	Out of reset, the low-level assembly code calls this
 	*	routine to initialize the MCF52259 modules.
 	********************************************************/
 
-	asm 
+	asm
 	{
 	    /* Initialize IPSBAR */
 	    move.l  #__IPSBAR,d0
@@ -49,7 +48,7 @@ void __initialize_hardware(void)
 	    add.l   #0x1,d0
 	    move.l  d0,0x40000000
 
-	    
+
 
 	    /* Initialize FLASHBAR */
 	    move.l  #__FLASHBAR,d0
@@ -58,10 +57,10 @@ void __initialize_hardware(void)
 	    movec   d0,FLASHBAR
 
 	}
-   	
-	
+
+
 	pll_init();
-	scm_init();	
+	scm_init();
 
 	initialize_exceptions();
 }

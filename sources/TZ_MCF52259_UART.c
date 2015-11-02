@@ -36,7 +36,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART0_UIMR = MCF_UART_UIMR_DB | MCF_UART_UIMR_COS;
         	//MCF_UART0_UIMR = MCF_UART_UIMR_FFULL_RXRDY;		//关闭所有中断
         	//               晶振频率 *1000000/需要的波特率*32
-        	ubgs = (uint16)((sysOsciFre*1000000)/(256000*32));
+        	ubgs = (uint16)(sysOsciFre/(256000*32));
         	MCF_UART0_UBG1 = (uint8)((ubgs&0xFF00)>>8);
         	MCF_UART0_UBG2 = (uint8)(ubgs&0x00FF);
 
@@ -60,7 +60,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART1_UCSR = MCF_UART_UCSR_TCS_SYS_CLK | MCF_UART_UCSR_RCS_SYS_CLK; //TXD和RXD都是用系统时钟
         	MCF_UART1_UIMR = MCF_UART_UIMR_FFULL_RXRDY;		//打开接受就绪中断
         	//               晶振频率 *1000000/需要的波特率*32
-        	ubgs = (uint16)((sysOsciFre*1000000)/(115200*32));
+        	ubgs = (uint16)(sysOsciFre/(115200*32));
         	MCF_UART1_UBG1 = (uint8)((ubgs&0xFF00)>>8);
         	MCF_UART1_UBG2 = (uint8)(ubgs&0x00FF);
 
@@ -83,7 +83,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART2_UIMR = MCF_UART_UIMR_FFULL_RXRDY;//MCF_UART_UIMR_FFULL_RXRDY;		//打开接受就绪中断
         	//MCF_UART2_UIMR = MCF_UART_UIMR_DB | MCF_UART_UIMR_COS;
         	//               晶振频率 *1000000/需要的波特率*32
-        	ubgs = (uint16)((sysOsciFre*1000000)/(115200*32));
+        	ubgs = (uint16)(sysOsciFre/(115200*32));
         	MCF_UART2_UBG1 = (uint8)((ubgs&0xFF00)>>8);
         	MCF_UART2_UBG2 = (uint8)(ubgs&0x00FF);
 

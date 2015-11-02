@@ -15,7 +15,8 @@
 #define IMG_W_HALF 80
 
 #define WORLD_ACRA_DATATYPE     1   //真实行距数据精确度定义
-#define IMG_CURRTABLE_DATATYPE  1   //图像->世界坐标转换表数据精确度定义
+#define IMG_ROWCURTTABLE_DATATYPE  1   //图像->世界坐标转换表数据精确度定义
+#define IMG_COLCURTTABLE_DATATYPE  2   //图像->世界坐标转换表数据精确度定义
 /*
 DATATYPE分为精确数据和模糊数据
     精确数据使用float类型，占空间大、处理速度慢，适用于精确控制
@@ -25,7 +26,11 @@ DATATYPE分为精确数据和模糊数据
 
 
 extern vuint8 Image[CAMERA_H][CAMERA_W_8];
+extern uint8 Image_ToPC[IMG_SIZE+4];
 extern vuint8 Image2[50][CAMERA_W_8];
+extern vuint8 ImageC[IMG_H][IMG_W];
+extern uint8 *Image_Ptr;
+
 extern vuint8 Image_Row[50];
 
 #if (WORLD_ACRA_DATATYPE == 1)
@@ -34,45 +39,57 @@ extern vuint8 Image_Row[50];
     extern float world_ActualRange[50];
 #endif
 
-extern vuint8 Image_ToPC[IMG_SIZE+4];
-extern vuint8 *Image_Ptr;
-extern uint16 Img_GAMvalue;
+#if (IMG_COLCURTTABLE_DATATYPE == 1)
+    extern uint8 colCorrectTable[50];
+#elif (IMG_COLCURTTABLE_DATATYPE == 2)
+    extern float colCorrectTable[50];
+#endif
+
+extern uint8 colCorDisTable[50];
 
 
-extern uint8 ImageC[IMG_H][IMG_W];
 
-extern vuint8 data,temp;
+extern vuint32 data,temp;
+extern int32 tempa,tempb;
+extern int32 tempc,tempd,tempe;
 extern int16 row,col;				//行，列，也可用u v代替
 extern int16 u,v;
 
+extern uint8 edgeFillMode;
+
 extern int16 leftEdgeStart;  		//左边线检测的起始位置
 extern int16 leftEdgeEnd;      		//左边线检测的结束位置
-
 extern int16 rightEdgeStart;	//右边线检测的起始位置
 extern int16 rightEdgeEnd;		//右边线检测的结束位置
 
-extern uint8 img_EdgeInfo[IMG_H][5];//图像边界信息
+extern int16 img_EdgeInfo[IMG_H][5];//图像边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
-
-extern uint8 world_EdgeInfo[IMG_H][5];//世界边界信息
+extern int16 world_EdgeInfo[IMG_H][5];//世界边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
 
 extern int8 leftEdgeFind,rightEdgeFind;			//左右边界是否找到标志量
 extern int8 leftEdgeMissCnt,rightEdgeMissCnt;	//左右边界miss个数计数
 extern int8 leftEdgeBool,rightEdgeBool;			//左右边界
 
-extern uint8 leftJPMissLine,rightJPMissLine;
+extern uint8 edgeOffset;
+extern uint8 edgeBothMissCnt;
+
 extern uint8 leftLastLine[2],rightLastLine[2];
-extern uint8 leftEdgeOffset,rightEdgeOffset;//左右限幅滤波变量
-extern int8 edgeOffset;
+extern uint8 lastLine[2];
 
 extern uint8 centerLine;
+extern uint8 lastCenterLine;
 
-extern uint8 img_ColEdgeInfo[IMG_W][6];//图像边界信息
+extern int16 img_ColEdgeInfo[IMG_W][6];//图像边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
 
-extern uint8 world_ColEdgeInfo[IMG_W][6];//世界边界信息
+extern int16 world_ColEdgeInfo[IMG_W][6];//世界边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
+
+extern uint16 imgEdgeFill4[20][4];  //类型4 补线
+extern uint8 imgEdgeFill4Cnt;
+extern int16 imgEdgeFill4Col,imgEdgeFill4Row;
+
 extern uint8 colEdgeEnable;
 extern uint8 colBool;
 extern int16 firstCol,firstRow;
@@ -92,10 +109,9 @@ extern int8 topEdgeMissCnt,bottomEdgeMissCnt;	//左右边界miss个数计数
 extern int8 topEdgeBool,bottomEdgeBool;				//左右边界
 extern uint8 colCenterLine;
 
-#if (IMG_CURRTABLE_DATATYPE == 1)
+#if (IMG_ROWCURTTABLE_DATATYPE == 1)
 extern uint8 correctTable[][160];//行对应的校正表
-#elif (IMG_CURRTABLE_DATATYPE == 2)
+#elif (IMG_ROWCURTTABLE_DATATYPE == 2)
 extern float correctTable[][160];//行对应的校正表
 #endif
-
 #endif

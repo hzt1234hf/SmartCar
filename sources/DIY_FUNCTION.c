@@ -1,5 +1,5 @@
 #ifdef DIY_FUNCTION
 
-uint8 osciFre = 80;//默认晶振频率
+uint32 osciFre;//默认晶振频率
 
 #endif
