@@ -13,7 +13,6 @@ vuint16 chang,hang;
 vuint16 chang2,hang2;
 uint8 bool = 1;
 vuint8 Cnt_HREF = 0,Cnt_VSYN = 0;
-vuint8 Cnt_Output = 0;
 
 void TEPORTx_Init(uint8 mode){
     switch(mode){
@@ -73,7 +72,9 @@ void TEPORTx_Init(uint8 mode){
     }
 }
 __declspec(interrupt) void EPORT1_interrupt(void){
+    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
     chang++;
+    Cnt_HREF = 0;
 #if 0
 //轮训部分采集
     if((chang%25)==2){
@@ -96,37 +97,14 @@ __declspec(interrupt) void EPORT1_interrupt(void){
         }
     }
 #elif 1
-    switch(Cnt_VSYN){
-        case 1:{
-            MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
-            MCF_DMA3_DAR = (vuint32)&Image[0];      //重设数组地址
-            MCF_DMA3_BCR = IMG_SIZE;                //重设大小
-        }break;
-        case 2:{
-            MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;      //开启一次场采集
-        }break;
-        case 3:{
-            TPIT1_ENABLE();
-        }break;
-        case 4:{
-        }break;
-        case 5:{
-            if(chang >= 50){
-                TPIT0_ENABLE();
-                chang = 0;
-            }
-            Cnt_VSYN = 0;
-        }break;
-    }
-    Cnt_VSYN++;
-
-#elif 0
     if(0 == (chang%150)){
+        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
         TPIT0_ENABLE();
         chang = 1;
+
     }else{
         MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
-        MCF_DMA3_DAR = (vuint32)(Image[0]);
+        MCF_DMA3_DAR = (vuint32)(&Image[0][0]);
         MCF_DMA3_BCR = IMG_SIZE;
         MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
     }
@@ -150,8 +128,6 @@ __declspec(interrupt) void EPORT1_interrupt(void){
         MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
     }
 #endif
-    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
-
 }
 __declspec(interrupt) void EPORT3_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF3;    //清中断标志位
