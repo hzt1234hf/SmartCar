@@ -9,7 +9,13 @@
 //#define EnableInterrupts() asm { move.w SR,D0; andi.l #0xF8FF,D0; move.w D0,SR;  }
 
 extern uint32 sysOsciFre;
-
+extern uint8 enCoder;
+//extern uint16 colorSenser[8];
+extern uint16 colorCnt;
+extern uint16 colorSZCnt;
+extern uint16 color3Cnt[3];
+//extern uint8 RGB[3];
+extern uint8 startend;
 #include "stdio.h"
 #include "TZ_CAMERA_VAR.h"
 #include "TZ_CONTROL_VAR.h"

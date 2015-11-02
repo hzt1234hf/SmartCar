@@ -4,6 +4,12 @@
  */
 #include "DIY_ComDef.h"
 uint32 sysOsciFre = 128000000;//默认晶振频率
+uint8 enCoder = 0;      //编码器值
+uint16 colorCnt;        //获取颜色周期计数
+uint16 color3Cnt[3];    //颜色计数值
+uint16 colorSZCnt;      //获取颜色计数
+//uint8 RGB[3];
+uint8 startend = 0;
 
 void TZ_PLLinit(uint8 mode){
     switch(mode){
@@ -33,7 +39,7 @@ void TZ_PLLinit(uint8 mode){
 
 int main(void)
 {
-    uint16 ab[] = {120,130,150,170,220,180,230,250,200,160,180,220,260,240,210,180,160,140,160,140,150,180,220,250,270,300,240,180,150,190};
+    uint16 ab[] = {120,130,150,170,220,250,280,300,320,340,360,330,290,260,250,230,210,180,160,140,150,180,220,250,270,300,240,180,150,190};
     uint8 c = 0;
 	EnableInterrupts();//打开总中断
 
@@ -57,6 +63,8 @@ int main(void)
 	//颜色模块的0、1、2、3号引脚
 	MCF_GPIO_DDRTJ |= MCF_GPIO_DDRTJ_DDRTJ2 | MCF_GPIO_DDRTJ_DDRTJ3 | MCF_GPIO_DDRTJ_DDRTJ4 | MCF_GPIO_DDRTJ_DDRTJ5;
     //输出
+    MCF_GPIO_CLRTJ &= ~(MCF_GPIO_CLRTJ_CLRTJ4 | MCF_GPIO_CLRTJ_CLRTJ5);//清空s2 s3 设置为检测红色
+    MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
 
     //SCCB_WriteByte(OV7725_HOutSize,0x14);
     //SCCB_WriteByte(OV7725_VOutSize,0x1E);
@@ -68,6 +76,15 @@ int main(void)
 	MCF_GPIO_DDRTF &= ~MCF_GPIO_DDRTF_DDRTF7;
 	MCF_GPIO_DDRTG &= ~(MCF_GPIO_DDRTG_DDRTG0 | MCF_GPIO_DDRTG_DDRTG1 | MCF_GPIO_DDRTG_DDRTG2 | MCF_GPIO_DDRTG_DDRTG3);
     //输入
+
+    enCoder |= MCF_GPIO_SETTF&MCF_GPIO_SETTF_SETTF7 ? 0x01:0;
+    enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG0 ? 0x02:0;
+    enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG1 ? 0x04:0;
+    enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG2 ? 0x08:0;
+    enCoder |= MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG3 ? 0x10:0;
+    
+    //sprintf(TXBuffer,"%u = %u,%u,%u,%u,%u\n",enCoder,MCF_GPIO_SETTF&MCF_GPIO_SETTF_SETTF7,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG0,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG1,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG2,MCF_GPIO_SETTG&MCF_GPIO_SETTG_SETTG3);
+    //TUart0_Puts(TXBuffer);
 
     MCF_GPIO_PTFPAR &= ~(MCF_GPIO_PTFPAR_MB_A9_GPIO | MCF_GPIO_PTFPAR_MB_A10_GPIO | MCF_GPIO_PTFPAR_MB_A11_GPIO | MCF_GPIO_PTFPAR_MB_A12_GPIO);
     //CD4520引脚
@@ -99,17 +116,13 @@ int main(void)
 	TPWMx_INIT(4);  //舵机PWM初始化
 
 	/*GPT模块初始化*/
+	//TGPTx_Init(3);  //颜色传感器输入捕获模式初始化
 	TGPTx_Init(0);  //编码器1输入捕获模式初始化
 	TGPTx_Init(1);  //编码器2输入捕获模式初始化
-	//TGPTx_Init(3);  //颜色传感器输入捕获模式初始化
+	
     TGPT0_ENINTER();   //关GPT0中断
-    TGPT1_ENINTER();   //关GPT2中断
-    TGPT3_DISINTER();   //关GPT4中断
-
-	/*外部中断初始化*/
-	//TEPORTx_Init(1);    //行外部中断初始化
-
-    TEPORTx_Init(7);    //场外部中断初始化
+    TGPT1_ENINTER();   //关GPT1中断
+    //TGPT3_ENINTER();   //关GPT3中断
 
 	/*定时器初始化*/
     TPITx_Init(0);      //初始化PIT0
@@ -118,13 +131,18 @@ int main(void)
     TPIT1_SetPMR(1);    //PIT1中断时间设置为1000ms
     //TPIT0_ENABLE();     //PIT1使能
 
+
+	/*外部中断初始化*/
+	//TEPORTx_Init(1);    //行外部中断初始化
+
+    //TEPORTx_Init(7);    //场外部中断初始化
+    
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
+    for(;;){}
+    //电机测试代码
     SetSpeed = 100;
-    //leftSSSum = 6000;
-    //rightSSSum = 6000;
-
     for(;;){
         delay3();
         delay3();
@@ -138,15 +156,16 @@ int main(void)
             c = 0;
         
     }
-	pwmCnt = 3050;//正常值为3000，舵机片有一点点，因此偏移一点
+    //舵机测试代码
+	pwmCnt = 2880;//正常值为3000，舵机片有一点点，因此偏移一点
     TPWM45_SetDTY(pwmCnt);
-	while(1){
-        while(pwmCnt<=3450){
+    while(1){}{
+        while(pwmCnt<=3230){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt++;
             delay2();
         }
-        while(pwmCnt>=2700){
+        while(pwmCnt>=2510){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt--;
             delay2();

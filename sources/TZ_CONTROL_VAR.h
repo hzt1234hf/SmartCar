@@ -64,6 +64,13 @@ extern int16 tpCol1,tpRow1;
 extern int16 tpCol2,tpRow2;
 extern int16 tpCol3,tpRow3;
 extern int16 tpLen1,tpLen2,tpLen3;
+
+/*总控制变量2*/
+extern uint8 lenOf2Screen;     //两幅图像间行驶的距离
+extern int lenOf2Screen_Row; //下幅图像开始在这幅图像的位置
+extern uint8 lenOfSpeed_Cnt;   //速度指向的图像行数减去下幅图像指向的行数的计数
+extern int lenOfSpeed_Row;   //速度指向的图像行数
+
 /*电机相关变量*/
 
 extern float leftMotorBase;
@@ -87,12 +94,19 @@ extern float motorOffsetCnt;         //PID调节后的GPT差值
 extern float motorOffsetSpeed;
 
 extern int motorCnt;
+extern int motorCnt1;
+extern int motorCnt2;
 
+extern float motorOffset;      //根据电机转速求出的偏移值
 
 /*舵机相关变量*/
 extern uint16 pwmCnt;
 extern float steerOffsetCnt;
 
+/*斜率相关变量*/
+extern float Slope[80];
+extern uint8 SlopeCnt;
+extern float SlopeAve;
 /*总的控制变量*/
 extern int lineOffsetValueCnt[IMG_H];       //累积偏移值
 extern int lineOffsetValue[IMG_H];          //偏移值

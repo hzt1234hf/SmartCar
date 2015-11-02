@@ -75,40 +75,109 @@ __declspec(interrupt) void EPORT7_interrupt(void){
 
     switch(Cnt_VSYN){
         case 1:{
+
             //TPIT0_ENABLE();
             MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
             MCF_DMA3_DAR = (vuint32)&Image[0];      //重设数组地址
             MCF_DMA3_BCR = IMG_SIZE;                //重设大小
             TPIT0_ENABLE();
+/*
+            color3Cnt[2] = MCF_GPT_GPTPACNT;//绿色
+            MCF_GPT_GPTPACNT = 0;
+            //改为红色
+            MCF_GPIO_CLRTJ &= ~(MCF_GPIO_CLRTJ_CLRTJ4 | MCF_GPIO_CLRTJ_CLRTJ5);//清空s2 s3 设置为检测红色        }
+            MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+*/
         }break;
         case 2:{
-            //TPIT0_ENABLE();
             MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;      //开启一次场采集
+            MCF_GPT_GPTPACNT = 0;
         }break;
         case 3:{
-            //TPIT0_ENABLE();
             bool = 1;
             debugCnt = 0;
             TPIT1_ENABLE();
+
+/*
+            //sprintf(TXBuffer,"%u,%u,%u--",color3Cnt[0],color3Cnt[1],color3Cnt[2]);
+            //TUart0_Puts(TXBuffer);
+            if((color3Cnt[0]/(color3Cnt[1]+1))>3&&(color3Cnt[0]/(color3Cnt[2]+1))>3){
+                startend = 1;
+                //sprintf(TXBuffer,"Red\n");
+                //TUart0_Puts(TXBuffer);
+            }else{
+                //sprintf(TXBuffer,"\n");
+                //TUart0_Puts(TXBuffer);
+            }
+*/
+            color3Cnt[0] = MCF_GPT_GPTPACNT;//红色
+            MCF_GPT_GPTPACNT = 0;
+            //改为蓝色
+            MCF_GPIO_SETTJ |= MCF_GPIO_SETTJ_SETTJ5; //置位s3设置为检测蓝色
+            MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+
         }break;
         case 4:{
-            //PITCnt = 0;//PITCnt清零
             //sprintf(TXBuffer,"5:%u,%u\n",bool,debugCnt);
             //TUart0_Puts(TXBuffer);
             TPIT0_ENABLE();
 /*
+            color3Cnt[1] = MCF_GPT_GPTPACNT;//蓝色
+            MCF_GPT_GPTPACNT = 0;
+            //改为绿色
+            MCF_GPIO_SETTJ |= MCF_GPIO_SETTJ_SETTJ4; //置位s2 s3 设置为检测绿色
+            MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+*/
             if(chang >= 49){
-                showImg();
+                //showImg();
                 chang = 0;
             }
-*/
+            /*
+            switch(colorSZCnt){
+                case 0:{
+                    colorSZCnt++;
+                    color3Cnt[0] = MCF_GPT_GPTPACNT;//红色
+                    MCF_GPT_GPTPACNT = 0;
+                    //改为蓝色
+                    MCF_GPIO_SETTJ |= MCF_GPIO_SETTJ_SETTJ5; //置位s3设置为检测蓝色
+                    MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+                }break;
+                case 1:{
+                    colorSZCnt++;
+                    color3Cnt[1] = MCF_GPT_GPTPACNT;//蓝色
+                    MCF_GPT_GPTPACNT = 0;
+                    //改为绿色
+                    MCF_GPIO_SETTJ |= MCF_GPIO_SETTJ_SETTJ4; //置位s2 s3 设置为检测绿色
+                    MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+                }break;
+                case 2:{
+                    colorSZCnt = 0;
+                    color3Cnt[2] = MCF_GPT_GPTPACNT;//绿色
+                    MCF_GPT_GPTPACNT = 0;
+                    //改为红色
+                    MCF_GPIO_CLRTJ &= ~(MCF_GPIO_CLRTJ_CLRTJ4 | MCF_GPIO_CLRTJ_CLRTJ5);//清空s2 s3 设置为检测红色        }
+                    MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
+
+                    sprintf(TXBuffer,"%u,%u,%u--",color3Cnt[0],color3Cnt[1],color3Cnt[2]);
+                    TUart0_Puts(TXBuffer);
+                    if((color3Cnt[0]/color3Cnt[1])>4&&(color3Cnt[0]/color3Cnt[2])>4){
+                        sprintf(TXBuffer,"Red\n");
+                        TUart0_Puts(TXBuffer);
+                    }else{
+                        sprintf(TXBuffer,"\n");
+                        TUart0_Puts(TXBuffer);
+                    }
+
+
+                }break;
+            }
+            */
             Cnt_VSYN = 0;
+
         }break;
-        case 5:{
-        }
     }
     Cnt_VSYN++;
-    //chang++;
+    chang++;
 
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
 

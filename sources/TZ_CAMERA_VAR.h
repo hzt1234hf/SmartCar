@@ -15,7 +15,7 @@
 #define IMG_W_HALF 80
 
 #define WORLD_ACRA_DATATYPE     1   //真实行距数据精确度定义
-#define IMG_ROWCURTTABLE_DATATYPE  1   //图像->世界坐标转换表数据精确度定义
+#define IMG_ROWCURTTABLE_DATATYPE  2   //图像->世界坐标转换表数据精确度定义
 #define IMG_COLCURTTABLE_DATATYPE  2   //图像->世界坐标转换表数据精确度定义
 /*
 DATATYPE分为精确数据和模糊数据
@@ -52,6 +52,7 @@ extern uint8 colCorDisTable[50];
 extern vuint32 data,temp;
 extern int32 tempa,tempb;
 extern int32 tempc,tempd,tempe;
+extern uint8 lastRow;
 extern int row,col;				//行，列，也可用u v代替
 extern int rowt,colt;
 extern int range;
@@ -71,7 +72,7 @@ extern int edgetempa,edgetempb;
 
 extern int img_EdgeInfo[IMG_H][5];//图像边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
-extern int world_EdgeInfo[IMG_H][5];//世界边界信息
+extern float world_EdgeInfo[IMG_H];//世界边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
 
 extern int16 img_EdgeTemp; //临时边界变量，用于临时存储
@@ -102,7 +103,7 @@ extern uint8 lastCenterLine;
 extern int img_ColEdgeInfo[IMG_W][6];//图像边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
 
-extern int world_ColEdgeInfo[IMG_W][6];//世界边界信息
+extern float world_ColEdgeInfo[IMG_W];//世界边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
 
 extern int imgEdgeFill4[10][4];  //类型4 补线

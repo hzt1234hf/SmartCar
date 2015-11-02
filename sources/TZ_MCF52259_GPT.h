@@ -14,5 +14,6 @@ __declspec(interrupt) void TGPT1_interrupt(void);
 __declspec(interrupt) void TGPT3_interrupt(void);
 
 extern uint16 leftSSSum,rightSSSum;
+extern uint8 leftSpeedBool,rightSpeedBool;
 
 #endif

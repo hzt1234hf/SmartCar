@@ -22,6 +22,7 @@
     vuint32 data,temp;
     int32 tempa,tempb;
     int32 tempc,tempd,tempe;
+    uint8 lastRow;
     int row,col;											//行，列，也可用u v代替
     int rowt,colt;
     int range;
@@ -42,7 +43,7 @@
 
     int img_EdgeInfo[IMG_H][5] = {0};//图像边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
-    int world_EdgeInfo[IMG_H][5] = {0};//世界边界信息
+    float world_EdgeInfo[IMG_H] = {0};//世界边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
 
     int16 img_EdgeTemp;         //临时边界变量，用于临时存储
@@ -75,7 +76,7 @@
     int img_ColEdgeInfo[IMG_W][6] = {0};//图像边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
 
-    int world_ColEdgeInfo[IMG_W][6] = {0};//世界边界信息
+    float world_ColEdgeInfo[IMG_W] = {0};//世界边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
 
     int imgEdgeFill4[10][4];  //类型4 补线

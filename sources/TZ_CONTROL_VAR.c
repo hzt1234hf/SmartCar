@@ -69,13 +69,21 @@ int16 tpLen1,tpLen2,tpLen3;
 uint8 centLineOffset = 5;
 uint8 lineOffsetRow = 0;
 
+/*总控制变量2*/
+uint8 lenOf2Screen;     //两幅图像间行驶的距离
+int lenOf2Screen_Row; //下幅图像开始在这幅图像的位置
+uint8 lenOfSpeed_Cnt;   //速度指向的图像行数减去下幅图像指向的行数的计数
+int lenOfSpeed_Row;   //速度指向的图像行数
+
+
+
 /*电机相关变量*/
-float leftMotorBase;
-float rightMotorBase;
+float leftMotorBase;        //左GPT计数器基准时间
+float rightMotorBase;       //右GPT计数器基准时间
 
-uint16 leftMSCnt,rightMSCnt;           //左右电机GPT值
+uint16 leftMSCnt,rightMSCnt;    //左右电机GPT值
 
-uint8 leftCnt,rightCnt; //左右电机GPT计数值
+uint8 leftCnt,rightCnt;     //左右电机GPT计数值
 
 uint16 leftMotorCntAve;     //GPT左平均值
 uint16 rightMotorCntAve;    //GPT右平均值
@@ -84,20 +92,27 @@ uint16 rightMotorCnt[8];    //GPT右8次值
 
 float motorSpeed;          //当前速度值 单位(cm/s)
 uint16 leftMotorSpeed;      //当前左真实速度
-uint16 rightMotorSpeed;     //当前右真实速度
-float leftMSPwm;            //左电机当前PWM值
-float rightMSPwm;           //右电机当前PWM值
-float motorOffsetSpeed;       //PID调节后电机真实速度的差值
+uint16 rightMotorSpeed;         //当前右真实速度
+float leftMSPwm;               //左电机当前PWM值
+float rightMSPwm;              //右电机当前PWM值
+float motorOffsetSpeed;        //PID调节后电机真实速度的差值
 float motorOffsetCnt;         //PID调节后的GPT差值
 int motorMSPwm;             //PID调节后总的电机PWM值
 
+float motorOffset;      //根据电机转速求出的偏移值
 
 int motorCnt;
-
+int motorCnt1;
+int motorCnt2;
 
 /*舵机相关变量*/
-uint16 pwmCnt;
-float steerOffsetCnt;
+uint16 pwmCnt;              //当前舵机PWM值
+float steerOffsetCnt;       //计算后的舵机偏移值
+
+/*斜率相关变量*/
+float Slope[80];
+uint8 SlopeCnt;
+float SlopeAve;
 
 /*PID相关变量*/
 
