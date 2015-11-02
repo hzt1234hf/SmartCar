@@ -1,0 +1,96 @@
+
+
+#>00000400          ___heap_size (linker command file)
+#>00000800          ___stack_size (linker command file)
+#>40000000          ___IPSBAR (linker command file)
+#>20000000          ___RAMBAR (linker command file)
+#>0000FFFF          ___RAMBAR_SIZE (linker command file)
+#>00000000          ___FLASHBAR (linker command file)
+#>00080000          ___FLASHBAR_SIZE (linker command file)
+#>2000FFFB          ___SP_AFTER_RESET (linker command file)
+
+# .userram
+
+# .code
+
+# .vectorram
+
+# .vectors
+  20000500 00000400 .vectortable _vect	(exceptions.c)
+
+# .text
+  20000900 0000000A .text   main	(main.c)
+  2000090A 0000001E .text   pll_init	(MCF52259_sysinit.c)
+  20000928 00000020 .text   scm_init	(MCF52259_sysinit.c)
+  20000948 0000003E .text   __initialize_hardware	(MCF52259_sysinit.c)
+  20000986 00000008 .text   __initialize_system	(startcf.c)
+  2000098E 00000022 .text   __copy_rom_section	(startcf.c)
+  200009B0 0000003A .text   __copy_rom_sections_to_ram	(startcf.c)
+  200009EA 00000004 .text   _ExitProcess	(startcf.c)
+  200009EE 0000006A .text   clear_mem	(startcf.c)
+  20000A58 0000009A .text   _startup	(startcf.c)
+  20000AF2 000001D6 .text   mcf_exception_handler	(exceptions.c)
+  20000CC8 00000020 .text   asm_exception_handler	(exceptions.c)
+  20000CE8 00000008 .text   mcf5xxx_wr_vbr	(exceptions.c)
+  20000CF0 00000048 .text   initialize_exceptions	(exceptions.c)
+  20000D38 0000001C .text   __call_static_initializers	(librt.a cf_staticinitia)
+  20000D54 0000002C .text   __destroy_global_chain	(librt.a cf_staticinitia)
+  20000D80 0000000C .text   _ewl_exit	(librt.a abort_exit.o   )
+#>20000D8C          ___ROM_AT (linker command file)
+#>20000D8C          ___DATA_ROM (linker command file)
+
+# .data
+#>20005000          ___DATA_RAM (linker command file)
+#>20005000          __exception_table_start__ (linker command file)
+# Exception index
+  20005000 00000000         Exception Table Index	()
+#>20005000          __exception_table_end__ (linker command file)
+#>20005000          ___sinit__ (linker command file)
+# Linker generated symbols
+  20005000 00000004         static initializer	(linker generated)
+#>20005004          __START_DATA (linker command file)
+#>20005004          __END_DATA (linker command file)
+#>20005004          __START_SDATA (linker command file)
+#>20005004          __END_SDATA (linker command file)
+#>20005004          ___DATA_END (linker command file)
+#>20005004          __SDA_BASE (linker command file)
+
+# .bss
+#>20005004          ___BSS_START (linker command file)
+#>20005004          __START_SBSS (linker command file)
+#>20005004          __END_SBSS (linker command file)
+#>20005004          __START_BSS (linker command file)
+  20005004 00000004 .bss    __global_destructor_chain	(librt.a cf_staticinitia)
+#>20005008          __END_BSS (linker command file)
+#>20005008          ___BSS_END (linker command file)
+
+# .custom
+#>20005008          ___HEAP_START (linker command file)
+#>20005008          ___heap_addr (linker command file)
+#>20005408          ___HEAP_END (linker command file)
+#>20005408          ___SP_END (linker command file)
+#>20005C08          ___SP_INIT (linker command file)
+#>20000000          ___VECTOR_RAM (linker command file)
+#>20005C08          __SP_INIT (linker command file)
+#>20005408          ___mem_limit (linker command file)
+#>00000010          ___stack_safety (linker command file)
+#>20000D90          _romp_at (linker command file)
+
+# .romp
+#>20000D90          __S_romp (linker command file)
+
+
+# Memory map:
+  v_addr   p_addr   size     name
+  20000000 20000000 00000000 .vectorram vectorram
+  20000500 20000500 00000000 .code      code
+  20000500 20000500 00000400 .vectors   code
+  20000900 20000900 0000048C .text      code
+  20005000 20005000 00000000 .userram   userram
+  20005000 20000D8C 00000004 .data      userram
+  20005004 20005004 00000004 .bss       userram
+  20005008 20005008 00000000 .custom    userram
+  20005008 20000D90 00000018 .romp      userram
+
+# Link start time: Thu Apr 16 18:01:44 2015
+# Link end time: Thu Apr 16 18:01:44 2015
