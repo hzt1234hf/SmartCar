@@ -27,7 +27,7 @@ void TEPORTx_Init(uint8 mode){
 
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_MASKALL;                   //开中断屏蔽
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_INT_MASK1;
-            MCF_INTC0_ICR01 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(1);   //设置中断优先级
+            MCF_INTC0_ICR01 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(3);   //设置中断优先级
 
         }break;
         case 3:{
@@ -60,18 +60,18 @@ void TEPORTx_Init(uint8 mode){
             MCF_GPIO_PNQPAR |= MCF_GPIO_PNQPAR_IRQ7_IRQ7;               //使能引脚功能为外部中端引脚
             MCF_EPORT_EPPAR |= MCF_EPORT_EPPAR_EPPA7_RISING;            //设置上升沿触发
             MCF_EPORT_EPDDR &= ~MCF_EPORT_EPDDR_EPDD7;                  //设置为引脚输入
-            //MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
+            MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
 
             MCF_EPORT_EPDR |= MCF_EPORT_EPDR_EPD7;
             //MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;                    //设置输出值
 
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_MASKALL;                   //开中断屏蔽
             MCF_INTC0_IMRL &= ~MCF_INTC_IMRL_INT_MASK7;
-            MCF_INTC0_ICR07 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(3);   //设置中断优先级
+            MCF_INTC0_ICR07 = MCF_INTC_ICR_IP(3) |MCF_INTC_ICR_IL(1);   //设置中断优先级
         }break;
     }
 }
-__declspec(interrupt) void EPORT1_interrupt(void){
+__declspec(interrupt) void EPORT7_interrupt(void){
     chang++;
 #if 0
 //轮训部分采集
@@ -156,13 +156,13 @@ __declspec(interrupt) void EPORT1_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
 
 }
-__declspec(interrupt) void EPORT3_interrupt(void){
-    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF3;    //清中断标志位
-}
 __declspec(interrupt) void EPORT5_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF5;    //清中断标志位
 }
-__declspec(interrupt) void EPORT7_interrupt(void){
+__declspec(interrupt) void EPORT3_interrupt(void){
+    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF3;    //清中断标志位
+}
+__declspec(interrupt) void EPORT1_interrupt(void){
 #if 0
     if(Cnt_HREF%2){
         MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF/2][0]);

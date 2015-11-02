@@ -17,6 +17,9 @@ vuint8 *Image_Ptr;
 uint16 Img_GAMvalue = 0;
 void TZ_OV7725_Init(){
 
+    MCF_GPIO_PANPAR = 0;//设为GPIO口
+    MCF_GPIO_DDRAN = 0xff;//全为输出口
+
     //寄存器，寄存器值次
     SCCB_WriteByte(OV7725_COM4         , 0xC1);
     SCCB_WriteByte(OV7725_CLKRC        , 0x00);

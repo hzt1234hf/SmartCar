@@ -1,5 +1,6 @@
 #include "DIY_ComDef.h"
 #ifdef TZ_MCF52259_PIT
+#include "TZ_CAMERA_VAR.c"
 /*
 *****2015.4.21 PIT模块编写完毕
 *****功能：PIT可编程定时器模块进行定时
@@ -87,7 +88,7 @@ __declspec(interrupt:0) void TPIT1_interrupt(void){
 /*图像边线提取后下一行起始位置偏移值*/
 #define EDGE_INVALID 255
 /*边线无效值定义，必须不为图像列的取值*/
-#define IMG_ANALYSE_MODE    2
+#define IMG_ANALYSE_MODE    11
 /*
 1:8位检测全图实现提取边线
 2:8位扫描实现提取边线
@@ -545,15 +546,27 @@ __declspec(interrupt:0) void TPIT1_interrupt(void){
 /***********************************/
 /*     uint8型线扫描法提取边线   */
 /***********************************/
+
     vuint8 data;
-    int16 row,col;
-    int16 leftJPStart,rightJPStart;  //JP：Jump Point跳变点，这里代表左右边线检测的起始位置
-    int16 leftJPEnd,rightJPEnd;      //JP：Jump Point跳变点，这里代表左右边线检测的结束位置
-    int8 leftJPFind,rightJPFind;
-    int8 leftJPMissCnt = 0,rightJPMissCnt = 0;
-    int8 leftJPMissBool = 1,rightJPMissBool = 1;
+    int16 row,col;											//行，列，也可用u v代替
+    
+    int16 leftEdgeStart = CAMERA_W/2;  		//左边线检测的起始位置
+    int16 leftEdgeEnd = 0;      					//左边线检测的结束位置
+    
+    int16 rightEdgeStart = CAMERA_W/2+1;	//右边线检测的起始位置
+    int16 rightEdgeEnd = CAMERA_W - 1;		//右边线检测的结束位置
+    
+    uint8 img_EdgeInfo[CAMERA_H][5] = {0};//图像边界信息 
+    //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
+    
+    int8 leftEdgeFind = 0,rightEdgeFind = 0;				//左右边界是否找到标志量
+    int8 leftEdgeMissCnt = 0,rightEdgeMissCnt = 0;	//左右边界miss个数计数
+    int8 leftEdgeBool = 1,rightEdgeBool = 1;				//左右边界
+    
     uint8 leftJPMissLine = 0,rightJPMissLine = 0;
     uint8 leftJPMissLast[2],rightJPMissLast[2];
+    
+    //bit还原为char型
     for(row = 0; row<120; row++){
         data = Image[row][0];
         for(col = 0;col < 19; col++){
@@ -598,10 +611,6 @@ __declspec(interrupt:0) void TPIT1_interrupt(void){
         	Image_Ptr[row * 20 + col] = 0x00;
         }
     }
-    leftJPStart = CAMERA_W/2;
-    rightJPStart = CAMERA_W/2 + 1;
-    leftJPEnd = 0;
-    rightJPEnd = CAMERA_W - 1;
 
     for(row = 119;row>=0;row --){
         leftJPFind = 0;
@@ -715,8 +724,13 @@ __declspec(interrupt:0) void TPIT1_interrupt(void){
 /***********************************/
     vuint8 data;
     vuint8 row,col;
-    for(row = 0; row>=0; row--){
 
+    for(row = 0; row<120; row++){   //图像偏移还原
+        data = Image[row][0];
+        for(col = 0;col < 19; col++){
+            Image[row][col] = Image[row][col + 1];
+        }
+        Image[row][col] = data;
     }
 #elif (IMG_ANALYSE_MODE==12)
 /***********************************/

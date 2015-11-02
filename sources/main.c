@@ -14,7 +14,7 @@ int main(void)
 	pll_init();         //PLL初始化，时钟设置为80Mhz，可超频到144Mhz
 	//TADCx_Init();
     //TADC_Test();
-    
+
 	/*串口初始化*/
 	TUartx_INIT(2);     //串口2初始化
 	TUartx_INIT(1);     //串口1初始化
@@ -22,23 +22,23 @@ int main(void)
     TUart0_DMAInit();
 
 	/*部分引脚GPIO模式初始化*/
-	MCF_GPIO_PTEPAR = 0;    //摄像头数据引脚A0-A8，配置为GPIO模式
-	MCF_GPIO_DDRTE = 0;     //输入
+	MCF_GPIO_PDDPAR = 0;    //摄像头数据引脚A0-A8，配置为GPIO模式
+	MCF_GPIO_DDRDD = 0;     //输入
 
-	MCF_GPIO_PTFPAR &= ~(MCF_GPIO_PTFPAR_MB_A15_GPIO);  //颜色模块的0号引脚
-	MCF_GPIO_DDRTF |= MCF_GPIO_PTFPAR_MB_A15_GPIO;      //输出
-	MCF_GPIO_PTGPAR &= ~(MCF_GPIO_PTGPAR_MB_A16_GPIO | MCF_GPIO_PTGPAR_MB_A17_GPIO | MCF_GPIO_PTGPAR_MB_A18_GPIO);
-    //颜色模块的1、2、3号引脚
-    MCF_GPIO_DDRTG |= MCF_GPIO_DDRTG_DDRTG0 | MCF_GPIO_DDRTG_DDRTG1 | MCF_GPIO_DDRTG_DDRTG2 | MCF_GPIO_DDRTG_DDRTG3;
+	MCF_GPIO_PTJPAR &= ~(MCF_GPIO_PTJPAR_FEC_TXD0_GPIO | MCF_GPIO_PTJPAR_FEC_TXD1_GPIO | MCF_GPIO_PTJPAR_FEC_TXD2_GPIO | MCF_GPIO_PTJPAR_FEC_TXD3_GPIO);
+	//颜色模块的0、1、2、3号引脚
+	MCF_GPIO_DDRTJ |= MCF_GPIO_DDRTJ_DDRTJ2 | MCF_GPIO_DDRTJ_DDRTJ3 | MCF_GPIO_DDRTJ_DDRTJ4 | MCF_GPIO_DDRTJ_DDRTJ5;
     //输出
 
     //SCCB_WriteByte(OV7725_HOutSize,0x14);
     //SCCB_WriteByte(OV7725_VOutSize,0x1E);
     TZ_OV7725_Init();
 
-	MCF_GPIO_PTFPAR &= ~(MCF_GPIO_PTFPAR_MB_A9_GPIO | MCF_GPIO_PTFPAR_MB_A10_GPIO | MCF_GPIO_PTFPAR_MB_A11_GPIO | MCF_GPIO_PTFPAR_MB_A12_GPIO | MCF_GPIO_PTFPAR_MB_A13_GPIO | MCF_GPIO_PTFPAR_MB_A14_GPIO);
+	MCF_GPIO_PTFPAR &= ~(MCF_GPIO_PTFPAR_MB_A15_GPIO);
+	MCF_GPIO_PTGPAR &= ~(MCF_GPIO_PTGPAR_MB_A16_GPIO | MCF_GPIO_PTGPAR_MB_A17_GPIO | MCF_GPIO_PTGPAR_MB_A18_GPIO | MCF_GPIO_PTGPAR_MB_A19_GPIO);
 	//拨码开关1-6的引脚
-	MCF_GPIO_DDRTF |= MCF_GPIO_DDRTF_DDRTF1 | MCF_GPIO_DDRTF_DDRTF2 | MCF_GPIO_DDRTF_DDRTF3 | MCF_GPIO_DDRTF_DDRTF4 | MCF_GPIO_DDRTF_DDRTF5 | MCF_GPIO_DDRTF_DDRTF6;
+	MCF_GPIO_DDRTF |= MCF_GPIO_DDRTF_DDRTF7;
+	MCF_GPIO_DDRTG &= ~(MCF_GPIO_DDRTG_DDRTG0 | MCF_GPIO_DDRTG_DDRTG1 | MCF_GPIO_DDRTG_DDRTG2 | MCF_GPIO_DDRTG_DDRTG3);
     //输入
 
 
@@ -51,7 +51,7 @@ int main(void)
 	//TDMAx_Init(1);      //初始化DMA模块1，用于HREF获取图像数据
 	//TDMAx_Init(2);
 	TDMAx_Init(3);      //初始化DMA模块3，用于PCLK获取图像数据
-    MCF_DMA3_SAR = (vuint32)0x40100030;//DMA3源地址设为 A0-A7 的输入引脚地址
+    MCF_DMA3_SAR = (vuint32)0x40100044;//DMA3源地址设为 A0-A7 的输入引脚地址
     //Image_ToPC[0] = 0x01;
     //Image_ToPC[1] = 0xFE;
     //Image_ToPC[IMG_SIZE+2] = 0xFE;
@@ -69,13 +69,13 @@ int main(void)
 	TGPTx_Init(0);  //编码器1输入捕获模式初始化
 	TGPTx_Init(1);  //编码器2输入捕获模式初始化
 	TGPTx_Init(3);  //颜色传感器输入捕获模式初始化
-    //TGPT0_DISINTER();   //关GPT0中断
-    //TGPT1_DISINTER();   //关GPT2中断
+    TGPT0_DISINTER();   //关GPT0中断
+    TGPT1_DISINTER();   //关GPT2中断
     TGPT3_DISINTER();   //关GPT4中断
 
 	/*外部中断初始化*/
-	TEPORTx_Init(1);    //场外部中断初始化
-	//TEPORTx_Init(7);    //行外部中断初始化
+	//TEPORTx_Init(1);    //行外部中断初始化
+	TEPORTx_Init(7);    //场外部中断初始化
 #endif
 	/*定时器初始化*/
     TPITx_Init(0);      //初始化PIT0
