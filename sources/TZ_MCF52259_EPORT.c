@@ -12,7 +12,8 @@
 vuint16 chang,hang;
 vuint16 chang2,hang2;
 uint8 bool = 1;
-vuint16 Cnt_HREF = 0,Cnt_VSYN = 0;
+vuint8 Cnt_HREF = 0,Cnt_VSYN = 0;
+uint8 abc = 0x55;
 
 void TEPORTx_Init(uint8 mode){
     switch(mode){
@@ -74,17 +75,61 @@ void TEPORTx_Init(uint8 mode){
 __declspec(interrupt) void EPORT1_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
     chang++;
-    if(!(chang%10)){
-        TPIT0_ENABLE();
-    }
-    if(chang%10){
+    Cnt_HREF = 0;
+#if 0
+    if((chang%10)==1){
         MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
-
+    }else if((chang%10)==2){
+        TPIT0_ENABLE();
     }else{
         chang2++;
-        Cnt_HREF = 0;
-        MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
+        MCF_DMA3_SAR = (vuint32)0x40100030;
+
+        while(Cnt_HREF<=60){
+
+            MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;//清除中断标志位
+            MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF][0]);
+            MCF_DMA3_BCR = CAMERA_W_8;
+            MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
+
+            MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
+            Cnt_HREF++;
+            while(!(MCF_EPORT_EPFR&MCF_EPORT_EPFR_EPF7))
+            MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
+        }
     }
+#elif 0
+    if((chang%10)==2){
+        TPIT0_ENABLE();
+    }else if((chang%10)==0){
+        chang2++;
+        MCF_DMA3_SAR = (vuint32)0x40100030;
+
+        while(Cnt_HREF<=60){
+
+            MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;//清除中断标志位
+            MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF][0]);
+            MCF_DMA3_BCR = CAMERA_W_8;
+            MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
+
+            MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
+            Cnt_HREF++;
+            while(!(MCF_EPORT_EPFR&MCF_EPORT_EPFR_EPF7))
+            MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
+        }
+        //MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
+    }
+#else
+    if((chang%10)==2){
+        TPIT0_ENABLE();
+    }else if((chang%10)==0){
+        chang2++;
+        MCF_DMA3_SAR = (vuint32)0x40100030;
+        MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
+    }else{
+        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
+    }
+#endif
 }
 __declspec(interrupt) void EPORT3_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF3;    //清中断标志位
@@ -93,17 +138,27 @@ __declspec(interrupt) void EPORT5_interrupt(void){
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF5;    //清中断标志位
 }
 __declspec(interrupt) void EPORT7_interrupt(void){
-    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
-    hang ++;
-
-    bool = 0;
-    //MCF_DMA3_DAR = (vuint32)&aa4;
+#if 0
+    if(Cnt_HREF%2){
+        MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF/2][0]);
+        MCF_DMA3_BCR = CAMERA_W_8 + CAMERA_OFFSET_8+1;
+        MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;//清除中断标志位
+        //TUart0_Putchar('G');
+    }else{
+        MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
+        MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
+        //TUart0_Putchar('H');
+    }
     Cnt_HREF++;
-    //MCF_DMA3_BCR = 2;
-    //MCF_DMA3_BCR = 10;
-    //MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT | MCF_DMA_DCR_START;
-    //MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;    //使能DMA1定时器
-    //TUart0_Putchar('G');
-    //MCF_DMA3_DCR |= MCF_DMA_DCR_START;
+#else
+    MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
+    MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF][0]);
+    MCF_DMA3_BCR = CAMERA_W_8;
+    MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
+    MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
+    Cnt_HREF++;
+#endif
+    hang ++;
+    MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
 }
 #endif

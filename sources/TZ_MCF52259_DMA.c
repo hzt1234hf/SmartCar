@@ -14,7 +14,6 @@
 uint8 aa1[12],aa2[5000],aa3 = 1,aa4[2];
 
 void TDMAx_Init(uint8 mode){
-    MCF_SCM_MPR = MCF_SCM_MPR_MPR(0x05);
     switch(mode){
         case 0:{
 
@@ -116,19 +115,20 @@ void TDMAx_Init(uint8 mode){
         case 3:{
             MCF_GPIO_PTCPAR |= MCF_GPIO_PTCPAR_DTIN3_DTIN3;
             /*                 计数值重新设置       DTIN外部输入时钟        使能DMA请求或中断       1分频             上升沿触发    */
-            MCF_DTIM3_DTMR = /*MCF_DTIM_DTMR_FRR |*/ MCF_DTIM_DTMR_CLK_DTIN /*| MCF_DTIM_DTMR_ORRI | MCF_DTIM_DTMR_PS(0) */| MCF_DTIM_DTMR_CE_RISE;
+            MCF_DTIM3_DTMR = /*MCF_DTIM_DTMR_FRR | MCF_DTIM_DTMR_CLK_DTIN | MCF_DTIM_DTMR_ORRI | MCF_DTIM_DTMR_PS(0) | */MCF_DTIM_DTMR_CE_RISE;
             /*                    使能DMA请求           停止DMA计数当CPU停止运行时*/
             MCF_DTIM3_DTXMR = MCF_DTIM_DTXMR_DMAEN;// | MCF_DTIM_DTXMR_HALTED;//使能DMA请求导致不会产生DMA中断但会直接进行DMA传输
             /*                  清空寄存器*/
-            MCF_DTIM3_DTER = MCF_DTIM_DTER_CAP;
+            MCF_DTIM3_DTER |= MCF_DTIM_DTER_CAP;
+            MCF_DTIM3_DTER |= MCF_DTIM_DTER_REF;//
             MCF_DTIM3_DTCR = 0;             //捕获计数寄存器值 用不到。。
             MCF_DTIM3_DTCN = 0;             //定时计数寄存器值初始为0
-            MCF_DTIM3_DTRR = 0;             //时钟计数相关值初始为……
+            MCF_DTIM3_DTRR = 0xFFFFFFFF;             //时钟计数相关值初始为……
 
             MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;    //使能DMA3定时器
 
-            //MCF_SCM_MPR = MCF_SCM_MPR_MPR(0x05);            //DMA可挂载总线
-            //MCF_SCM_DMAREQC |= MCF_SCM_DMAREQC_DMAC3(0x07); //设置为使用DTIME3作为外部触发
+            MCF_SCM_MPR = MCF_SCM_MPR_MPR(0x05);            //DMA可挂载总线
+            MCF_SCM_DMAREQC |= MCF_SCM_DMAREQC_DMAC3(0x07); //设置为使用DTIME3作为外部触发
             MCF_DMA3_SAR = (vuint32)0;
             MCF_DMA3_DAR = (vuint32)0;
             MCF_DMA3_BCR = 0;
@@ -136,7 +136,7 @@ void TDMAx_Init(uint8 mode){
 
             /*                 源地址数据为字节型      目的地址数据为字节型       周期窃取       目的地址自动增加  传输完毕后关闭外部请求     使能中断*/
             //MCF_DMA3_DCR = MCF_DMA_DCR_SSIZE_BYTE | MCF_DMA_DCR_DSIZE_BYTE  | MCF_DMA_DCR_CS | MCF_DMA_DCR_DINC | MCF_DMA_DCR_D_REQ | MCF_DMA_DCR_INT | MCF_DMA_DCR_AA;
-            MCF_DMA3_DCR = MCF_DMA_DCR_SSIZE_BYTE | MCF_DMA_DCR_DSIZE_BYTE | MCF_DMA_DCR_INT | MCF_DMA_DCR_DINC | MCF_DMA_DCR_AA;
+            MCF_DMA3_DCR = MCF_DMA_DCR_DSIZE(1) | MCF_DMA_DCR_SSIZE(1) | MCF_DMA_DCR_DINC | MCF_DMA_DCR_CS | MCF_DMA_DCR_D_REQ;
 
         	MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_MASKALL;                   //清零屏蔽所有中断
         	MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_INT_MASK12;                 //设置中断源号为9，实际位置为9+64
@@ -225,9 +225,9 @@ __declspec(interrupt) void TDMA0_interrupt(void){
     TUart0_Puts("DMA0\r\n");
 }
 __declspec(interrupt) void TDMA1_interrupt(void){
-    sprintf(TXBuffer,"%u-",MCF_DMA1_DSR);
-    TUart0_Puts(TXBuffer);
-    hang2++;
+    //sprintf(TXBuffer,"%u-",MCF_DMA1_DSR);
+    //TUart0_Puts(TXBuffer);
+    //hang2++;
     //bool = 1;
     MCF_DMA1_DSR |= MCF_DMA_DSR_DONE;
     TUart0_Puts("DMA1\r\n");
@@ -237,11 +237,8 @@ __declspec(interrupt) void TDMA2_interrupt(void){
     TUart0_Puts("DMA2\r\n");
 }
 __declspec(interrupt) void TDMA3_interrupt(void){
-    sprintf(TXBuffer,"%u-",MCF_DMA3_DSR);
-    TUart0_Puts(TXBuffer);
-
-    TUart0_Puts("DMA3\r\n");
     MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;
+    TUart0_Puts("DMA3\r\n");
     //bool = 1;
 }
 __declspec(interrupt) void TDTIM0_interrupt(void){

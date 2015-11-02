@@ -9,7 +9,7 @@ __declspec(interrupt) void EPORT7_interrupt(void);
 
 extern vuint16 chang,hang;
 extern vuint16 chang2,hang2;
-extern vuint16 Cnt_HREF,Cnt_VSYN;
+extern vuint8 Cnt_HREF,Cnt_VSYN;
 extern uint8 bool;
 
 #endif

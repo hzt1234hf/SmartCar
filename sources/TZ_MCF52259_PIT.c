@@ -33,17 +33,23 @@ void TPITx_Init(uint8 mode){
     }
 }
 __declspec(interrupt:0) void TPIT0_interrupt(void){
-#if 0
-    uint8 a,b;
-    TUart0_Putchar(0);
-    TUart0_Putchar(255);
-    TUart0_Putchar(1);
-    TUart0_Putchar(0);
+#if 1
+    //uint8 a,b;
+    TUart0_Putchar(0x01);
+    TUart0_Putchar(0xFE);
 
-    for(a = 60;a>0;a--){
-        for(b = 10;b>0;b--)
-        TUart0_Putchar(Image[60-a][10-b]);
+    TUart0_DMAPutBuffer(Image[0],CAMERA_W_8*CAMERA_H);
+    /*
+    for(a = 0;a<CAMERA_H;a++){
+        for(b = 0;b<CAMERA_W_8;b++)
+            TUart0_Putchar(Image[a][b]);
+        //TUart0_Putchar(Image[a][0]);
+
     }
+    */
+
+    TUart0_Putchar(0xFE);
+    TUart0_Putchar(0x01);
 #endif
     MCF_PIT0_PCSR &= ~MCF_PIT_PCSR_EN;
     MCF_PIT0_PCSR |= MCF_PIT_PCSR_PIF;  //清中断标志
@@ -55,6 +61,7 @@ __declspec(interrupt:0) void TPIT1_interrupt(void){
     cc1[0]++;
     //float ls,rs;
     MCF_PIT1_PCSR |= MCF_PIT_PCSR_PIF;  //清中断标志
+/*
 
     MCF_DMA3_SAR = (vuint32)0x40100030;
     MCF_DMA3_DAR = (vuint32)cc2;
@@ -62,14 +69,23 @@ __declspec(interrupt:0) void TPIT1_interrupt(void){
     sprintf(TXBuffer,"%u,%u,%u==",MCF_DMA3_SAR,MCF_DMA3_DAR,MCF_DMA3_BCR);
     TUart0_Puts(TXBuffer);
     MCF_DMA3_DCR |= MCF_DMA_DCR_START;
-
-#if 1
+*/
+/*
+    MCF_DMA3_DAR = (vuint32)(ImagePtr);
+    MCF_DMA3_BCR = (vuint32)80;
+    Cnt_HREF+=10;
+    if(Cnt_HREF== 80){
+        Cnt_HREF = 0;
+    }
+    MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
+*/
+#if 0
     TUart0_Puts("PIT1!\r\n");
     sprintf(TXBuffer,"%u,%u,%u,%u--",chang,hang,hang2,chang2);
     TUart0_Puts(TXBuffer);
-    sprintf(TXBuffer,"%u,%u,%u,%u---",MCF_DTIM3_DTCR,MCF_DMA3_SAR,MCF_DMA3_DAR,MCF_GPIO_SETTE);
+    sprintf(TXBuffer,"%u,%u,%u,%u,%u,%u---",MCF_DTIM3_DTCR,MCF_DMA3_SAR,MCF_DMA3_DAR,Image,&Image[1],MCF_DMA3_BCR&0xffffff);
     TUart0_Puts(TXBuffer);
-    sprintf(TXBuffer,"%u,%u,%u,%u,%u\r\n",&(Image[Cnt_HREF][0]),cc2[0],cc2[1],cc2[2],cc2[3]);
+    sprintf(TXBuffer,"%u,%u,%u,%u,%u\r\n",&(Image[Cnt_HREF]),cc2[0],cc2[1],cc2[2],cc2[3]);
     TUart0_Puts(TXBuffer);
     //sprintf(TXBuffer,"--%u--%u\r\n",leftMSCnt,rightMSCnt);
     //TUart0_Puts(TXBuffer);

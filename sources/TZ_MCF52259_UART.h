@@ -4,7 +4,9 @@
 extern void TUartx_INIT(uint8);
 extern void TUart0_Putchar(char );
 extern void TUart0_Puts(char *);
-extern void TUart0_DMAPuts(char *,uint16 );
+extern void TUart0_DMAInit();
+extern void TUart0_DMAPuts(uint16 size);
+extern void TUart0_DMAPutBuffer(vuint8 *buf,uint16 size);
 extern void TUart1_Putchar(char );
 extern void TUart1_Puts(char *);
 extern void TUart2_Putchar(char );

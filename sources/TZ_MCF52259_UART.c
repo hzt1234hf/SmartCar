@@ -13,7 +13,6 @@
 char TXBuffer[100];
 char RXBuffer[100];
 void TUartx_INIT(uint8 x){
-
     uint16 ubgs;
     switch(x){
         case 0:default:{
@@ -25,6 +24,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART0_UMR1 = MCF_UART_UMR_BC_8 |MCF_UART_UMR_PM_NONE;//接收中断使能，8位数据位，无奇偶校验
         	MCF_UART0_UMR2 = MCF_UART_UMR_CM_NORMAL | MCF_UART_UMR_SB_STOP_BITS_1;  //正常通道模式，1位停止位
         	MCF_UART0_UCSR = MCF_UART_UCSR_TCS_SYS_CLK | MCF_UART_UCSR_RCS_SYS_CLK; //TXD和RXD都是用系统时钟
+        	MCF_UART0_UIMR = MCF_UART_UIMR_DB | MCF_UART_UIMR_COS;
         	//MCF_UART0_UIMR = MCF_UART_UIMR_FFULL_RXRDY;		//关闭所有中断
         	//               晶振频率 *1000000/需要的波特率*32
         	ubgs = (uint16)((sysOsciFre*1000000)/(115200*32));
@@ -36,7 +36,7 @@ void TUartx_INIT(uint8 x){
             /*              中断优先级，最高7级，中断级别，最高3级          */
             //MCF_INTC0_ICR13 = MCF_INTC_ICR_IP(4) |MCF_INTC_ICR_IL(2);
 
-        	MCF_UART0_UIMR = 0;		            //关闭所有UART的CPU中断
+        	//MCF_UART0_UIMR = 0;		            //关闭所有UART的CPU中断
         	MCF_UART0_UCR = MCF_UART_UCR_RX_ENABLED | MCF_UART_UCR_TX_ENABLED;//使能串口接收发送
 
         }break;
@@ -72,6 +72,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART2_UMR2 = MCF_UART_UMR_CM_NORMAL | MCF_UART_UMR_SB_STOP_BITS_1;  //正常通道模式，1位停止位
         	MCF_UART2_UCSR = MCF_UART_UCSR_TCS_SYS_CLK | MCF_UART_UCSR_RCS_SYS_CLK; //TXD和RXD都是用系统时钟
         	MCF_UART2_UIMR = MCF_UART_UIMR_FFULL_RXRDY;//MCF_UART_UIMR_FFULL_RXRDY;		//打开接受就绪中断
+        	//MCF_UART2_UIMR = MCF_UART_UIMR_DB | MCF_UART_UIMR_COS;
         	//               晶振频率 *1000000/需要的波特率*32
         	ubgs = (uint16)((sysOsciFre*1000000)/(115200*32));
         	MCF_UART2_UBG1 = (uint8)((ubgs&0xFF00)>>8);
@@ -96,19 +97,19 @@ void TUart0_Putchar(char data){
 void TUart0_Puts(char *data){
     while(*data) TUart0_Putchar(*data++);
 }
-void TUart0_DMAPuts(char *data,uint16 size){
+void TUart0_DMAInit(){
 
     MCF_DMA0_SAR = (vuint32)TXBuffer;
-    MCF_DMA0_DAR = (vuint32)RXBuffer;
-    MCF_DMA0_BCR = 15;
+    MCF_DMA0_DAR = (vuint32)0x4000020C;
+    MCF_DMA0_BCR = 0;
 
     //MCF_SCM_MPR |= 0x04;              //使DMA控制器为管理员权限
-    MCF_SCM_DMAREQC = MCF_SCM_DMAREQC_DMAC0(0x0C);        //使用DMA0模块请求源UART0发送器
+    MCF_SCM_DMAREQC |= MCF_SCM_DMAREQC_DMAC0(0x0C);        //使用DMA0模块请求源UART0发送器
     MCF_SCM_PACR2 = MCF_SCM_PACR_ACCESS_CTRL1(6);           //设置DMA的用户/管理员 访问权限 --- 可读/可写
     MCF_SCM_GPACR0 = MCF_SCM_GPACR_ACCESS_CTRL(6);
     //---2015.5.2---MCF_SCM_RAMBAR |= MCF_SCM_RAMBAR_BDE;//使能非核心模块(这里指DMA)访问SRAM
-    /*               使能中断          周期窃取         源地址数据为字节型     目的地址数据为字节型         源地址自动增加          自动清零*/
-    MCF_DMA0_DCR = MCF_DMA_DCR_INT | MCF_DMA_DCR_CS | MCF_DMA_DCR_SSIZE_BYTE | MCF_DMA_DCR_DSIZE_BYTE | MCF_DMA_DCR_SINC | MCF_DMA_DCR_D_REQ;
+    /*               周期窃取         源地址数据为字节型     目的地址数据为字节型         源地址自动增加          自动清零*/
+    MCF_DMA0_DCR = MCF_DMA_DCR_CS | MCF_DMA_DCR_SSIZE(1) | MCF_DMA_DCR_DSIZE(1) | MCF_DMA_DCR_SINC | MCF_DMA_DCR_D_REQ;
 
     /*Disable interrupts using the UIMR register. The appropriate UIMR bits must be cleared so that
     interrupt requests are disabled for those conditions for which a DMA request is desired. For
@@ -129,6 +130,24 @@ void TUart0_DMAPuts(char *data,uint16 size){
     MCF_INTC0_IMRL &=~ MCF_INTC_IMRL_INT_MASK9;                 //设置中断源号为9，实际位置为9+64
     MCF_INTC0_ICR09 = MCF_INTC_ICR_IP(5) |MCF_INTC_ICR_IL(2);   //设置中断优先级
     /*              允许外部请求    */
+    //MCF_DMA0_DCR |= MCF_DMA_DCR_EEXT;
+
+}
+void TUart0_DMAPuts(uint16 size){
+
+    MCF_DMA0_DSR |= MCF_DMA_DSR_DONE;
+    MCF_DMA0_DAR = (vuint32)0x4000020C;
+    MCF_DMA0_SAR = (vuint32)TXBuffer;
+    MCF_DMA0_BCR = size;
+    MCF_DMA0_DCR |= MCF_DMA_DCR_EEXT;
+
+}
+void TUart0_DMAPutBuffer(vuint8 *buf,uint16 size){
+
+    MCF_DMA0_DSR |= MCF_DMA_DSR_DONE;
+    MCF_DMA0_DAR = (vuint32)0x4000020C;
+    MCF_DMA0_SAR = (vuint32)buf;
+    MCF_DMA0_BCR = size;
     MCF_DMA0_DCR |= MCF_DMA_DCR_EEXT;
 
 }
@@ -179,7 +198,6 @@ __declspec(interrupt) void UART0_DMA_interrupt(void){
 		TUart1_Puts("transfer remaining but channel not selected\n");
 	}
     MCF_DMA0_DSR |= MCF_DMA_DSR_DONE;
-    TUart1_Puts("dma");
 }
 __declspec(interrupt) void UART0_interrupt(void){
     uint8 a;
@@ -204,9 +222,8 @@ __declspec(interrupt) void UART2_interrupt(void){
     TUart2_Putchar('C');
     if(MCF_UART2_USR&MCF_UART_USR_RXRDY){
         a = MCF_UART2_URB;
-        TUart2_Puts("DMA send message!\r\n");
-        sprintf(TXBuffer,"This is DMA0!\r\n");
-        TUart0_DMAPuts(TXBuffer,16);
+        TUart2_Putchar(a);
+        TUart2_Putchar('+');
     }
 }
 #endif

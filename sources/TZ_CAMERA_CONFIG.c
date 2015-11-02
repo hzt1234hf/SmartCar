@@ -2,28 +2,29 @@
 #ifdef TZ_CAMERA_CONFIG
 
 
-vuint8 Image[CAMERA_H+10][CAMERA_W] = {0};
+vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
+vuint8 * ImagePtr = Image[0];
 
 void TZ_OV7725_Init(){
 
-//寄存器，寄存器值次
-    SCCB_WriteByte(OV7725_COM4,     0xC1);
+    //寄存器，寄存器值次
+    SCCB_WriteByte(OV7725_COM4         , 0xC1);
+    SCCB_WriteByte(OV7725_CLKRC        , 0x04);
     //SCCB_WriteByte(OV7725_CLKRC,    0x00);
-    SCCB_WriteByte(OV7725_CLKRC,    4);
-    SCCB_WriteByte(OV7725_COM2,     0x03);
-    SCCB_WriteByte(OV7725_COM3,     0xD0);
-    SCCB_WriteByte(OV7725_COM7,     0x40);
-    SCCB_WriteByte(OV7725_HSTART,   0x3F);
-    SCCB_WriteByte(OV7725_HSIZE,    0x50);
-    SCCB_WriteByte(OV7725_VSTRT,    0x03);
-    SCCB_WriteByte(OV7725_VSIZE,    0x78);
-    SCCB_WriteByte(OV7725_HREF,     0x00);
-    SCCB_WriteByte(OV7725_SCAL0,    0x0A);
-    SCCB_WriteByte(OV7725_AWB_Ctrl0,0xE0);
-    SCCB_WriteByte(OV7725_DSPAuto,  0xff);
-    SCCB_WriteByte(OV7725_DSP_Ctrl2,0x0C);
-    SCCB_WriteByte(OV7725_DSP_Ctrl3,0x00);
-    SCCB_WriteByte(OV7725_DSP_Ctrl4,0x00);
+    SCCB_WriteByte(OV7725_COM2         , 0x03);
+    SCCB_WriteByte(OV7725_COM3         , 0xD0);
+    SCCB_WriteByte(OV7725_COM7         , 0x40);
+    SCCB_WriteByte(OV7725_HSTART       , 0x3F);
+    SCCB_WriteByte(OV7725_HSIZE        , 0x50);
+    SCCB_WriteByte(OV7725_VSTRT        , 0x03);
+    SCCB_WriteByte(OV7725_VSIZE        , 0x78);
+    SCCB_WriteByte(OV7725_HREF         , 0x00);
+    SCCB_WriteByte(OV7725_SCAL0        , 0x0A);
+    SCCB_WriteByte(OV7725_AWB_Ctrl0    , 0xE0);
+    SCCB_WriteByte(OV7725_DSPAuto      , 0xff);
+    SCCB_WriteByte(OV7725_DSP_Ctrl2    , 0x0C);
+    SCCB_WriteByte(OV7725_DSP_Ctrl3    , 0x00);
+    SCCB_WriteByte(OV7725_DSP_Ctrl4    , 0x00);
 /*
 
 150fps情况下，经过计算80*60的图像每个PCLK为1s/150fps/(80*60) = 1388.88ns，由于鹰眼经过了硬件二值化，
@@ -37,60 +38,61 @@ void TZ_OV7725_Init(){
   640*480       60fps       54.2534ns      694.444ns      34.72us     16.66ms
 
 */
-#if(CAMERA_W==80)
-    SCCB_WriteByte(OV7725_HOutSize, 0x14);
-#elif(CAMERA_W==160)
-    SCCB_WriteByte(OV7725_HOutSize, 0x28);
-#elif(CAMERA_W==240)
-    SCCB_WriteByte(OV7725_HOutSize, 0x3c);
-#elif(CAMERA_W==320)
-    SCCB_WriteByte(OV7725_HOutSize, 0x50);
+
+#if (CAMERA_W == 80)
+    SCCB_WriteByte(OV7725_HOutSize     , 0x14);
+#elif (CAMERA_W == 160)
+    SCCB_WriteByte(OV7725_HOutSize     , 0x28);
+#elif (CAMERA_W == 240)
+    SCCB_WriteByte(OV7725_HOutSize     , 0x3c);
+#elif (CAMERA_W == 320)
+    SCCB_WriteByte(OV7725_HOutSize     , 0x50);
 #else
 
 #endif
 
-#if(CAMERA_H==60)
-    SCCB_WriteByte(OV7725_VOutSize, 0x1E);
-#elif(CAMERA_H==120)
-    SCCB_WriteByte(OV7725_VOutSize, 0x3c);
-#elif(CAMERA_H==180)
-    SCCB_WriteByte(OV7725_VOutSize, 0x5a);
-#elif(CAMERA_H==240)
-    SCCB_WriteByte(OV7725_VOutSize, 0x78);
+#if (CAMERA_H == 60 )
+    SCCB_WriteByte(OV7725_VOutSize     , 0x1E);
+#elif (CAMERA_H == 120 )
+    SCCB_WriteByte(OV7725_VOutSize     , 0x3c);
+#elif (CAMERA_H == 180 )
+    SCCB_WriteByte(OV7725_VOutSize     , 0x5a);
+#elif (CAMERA_H == 240 )
+    SCCB_WriteByte(OV7725_VOutSize     , 0x78);
 #else
 
 #endif
 
-    SCCB_WriteByte(OV7725_EXHCH,    0x00);
-    SCCB_WriteByte(OV7725_GAM1,     0x0c);
-    SCCB_WriteByte(OV7725_GAM2,     0x16);
-    SCCB_WriteByte(OV7725_GAM3,     0x2a);
-    SCCB_WriteByte(OV7725_GAM4,     0x4e);
-    SCCB_WriteByte(OV7725_GAM5,     0x61);
-    SCCB_WriteByte(OV7725_GAM6,     0x6f);
-    SCCB_WriteByte(OV7725_GAM7,     0x7b);
-    SCCB_WriteByte(OV7725_GAM8,     0x86);
-    SCCB_WriteByte(OV7725_GAM9,     0x8e);
-    SCCB_WriteByte(OV7725_GAM10,    0x97);
-    SCCB_WriteByte(OV7725_GAM11,    0xa4);
-    SCCB_WriteByte(OV7725_GAM12,    0xaf);
-    SCCB_WriteByte(OV7725_GAM13,    0xc5);
-    SCCB_WriteByte(OV7725_GAM14,    0xd7);
-    SCCB_WriteByte(OV7725_GAM15,    0xe8);
-    SCCB_WriteByte(OV7725_SLOP,     0x20);
-    SCCB_WriteByte(OV7725_LC_RADI,  0x00);
-    SCCB_WriteByte(OV7725_LC_COEF,  0x13);
-    SCCB_WriteByte(OV7725_LC_XC,    0x08);
-    SCCB_WriteByte(OV7725_LC_COEFB, 0x14);
-    SCCB_WriteByte(OV7725_LC_COEFR, 0x17);
-    SCCB_WriteByte(OV7725_LC_CTR,   0x05);
-    SCCB_WriteByte(OV7725_BDBase,   0x99);
-    SCCB_WriteByte(OV7725_BDMStep,  0x03);
-    SCCB_WriteByte(OV7725_SDE,      0x04);
-    SCCB_WriteByte(OV7725_BRIGHT,   0x00);
-    SCCB_WriteByte(OV7725_CNST,     0xFF);
-    SCCB_WriteByte(OV7725_SIGN,     0x06);
-    SCCB_WriteByte(OV7725_UVADJ0,   0x11);
-    SCCB_WriteByte(OV7725_UVADJ1,   0x02);
+    SCCB_WriteByte(OV7725_EXHCH        , 0x00);
+    SCCB_WriteByte(OV7725_GAM1         , 0x0c);
+    SCCB_WriteByte(OV7725_GAM2         , 0x16);
+    SCCB_WriteByte(OV7725_GAM3         , 0x2a);
+    SCCB_WriteByte(OV7725_GAM4         , 0x4e);
+    SCCB_WriteByte(OV7725_GAM5         , 0x61);
+    SCCB_WriteByte(OV7725_GAM6         , 0x6f);
+    SCCB_WriteByte(OV7725_GAM7         , 0x7b);
+    SCCB_WriteByte(OV7725_GAM8         , 0x86);
+    SCCB_WriteByte(OV7725_GAM9         , 0x8e);
+    SCCB_WriteByte(OV7725_GAM10        , 0x97);
+    SCCB_WriteByte(OV7725_GAM11        , 0xa4);
+    SCCB_WriteByte(OV7725_GAM12        , 0xaf);
+    SCCB_WriteByte(OV7725_GAM13        , 0xc5);
+    SCCB_WriteByte(OV7725_GAM14        , 0xd7);
+    SCCB_WriteByte(OV7725_GAM15        , 0xe8);
+    SCCB_WriteByte(OV7725_SLOP         , 0x20);
+    SCCB_WriteByte(OV7725_LC_RADI      , 0x00);
+    SCCB_WriteByte(OV7725_LC_COEF      , 0x13);
+    SCCB_WriteByte(OV7725_LC_XC        , 0x08);
+    SCCB_WriteByte(OV7725_LC_COEFB     , 0x14);
+    SCCB_WriteByte(OV7725_LC_COEFR     , 0x17);
+    SCCB_WriteByte(OV7725_LC_CTR       , 0x05);
+    SCCB_WriteByte(OV7725_BDBase       , 0x99);
+    SCCB_WriteByte(OV7725_BDMStep      , 0x03);
+    SCCB_WriteByte(OV7725_SDE          , 0x04);
+    SCCB_WriteByte(OV7725_BRIGHT       , 0x00);
+    SCCB_WriteByte(OV7725_CNST         , 0xFF);
+    SCCB_WriteByte(OV7725_SIGN         , 0x06);
+    SCCB_WriteByte(OV7725_UVADJ0       , 0x11);
+    SCCB_WriteByte(OV7725_UVADJ1       , 0x02);
 }
 #endif

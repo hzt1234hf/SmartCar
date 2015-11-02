@@ -10,13 +10,15 @@ vuint16 leftMotorSpeed,rightMotorSpeed; //左右电机速度值
 
 int main(void)
 {
+    uint8 e;
 	EnableInterrupts();//打开总中断
 	pll_init();         //PLL初始化，时钟设置为80Mhz，可超频到144Mhz
 	/*串口初始化*/
 	TUartx_INIT(2);     //串口2初始化
 	TUartx_INIT(1);     //串口1初始化
     TUartx_INIT(0);     //串口0初始化
-
+    TUart0_DMAInit();
+    
 	/*部分引脚GPIO模式初始化*/
 	MCF_GPIO_PTEPAR = 0;    //摄像头数据引脚A0-A8，配置为GPIO模式
 	MCF_GPIO_DDRTE = 0;     //输入
@@ -45,9 +47,8 @@ int main(void)
 	TUart0_Puts("Hello MCF52259 send by TUART0!\r\n");
 	TUart1_Puts("Hello MCF52259 send by TUART1!\r\n");
 	TUart2_Puts("Hello MCF52259 send by TUART2!\r\n");
-    //sprintf(TXBuffer,"Hello TUART0 DMA!\r\n");
-	//TUart0_DMAPuts(TXBuffer,15);
-#if 0
+
+#if 1
 	/*PWM模块   初始化*/
 	TPWMx_INIT(0);  //左电机PWM初始化 左右根据接线而定
 	TPWMx_INIT(2);  //右电机PWM初始化
@@ -62,28 +63,27 @@ int main(void)
     TGPT3_DISINTER();   //关GPT4中断
 
 	/*外部中断初始化*/
-	//TEPORTx_Init(1);    //场外部中断初始化
-//	TEPORTx_Init(7);    //行外部中断初始化
+	TEPORTx_Init(1);    //场外部中断初始化
+	TEPORTx_Init(7);    //行外部中断初始化
 #endif
 	/*定时器初始化*/
     TPITx_Init(0);      //初始化PIT0
     TPITx_Init(1);      //初始化PIT1
     TPIT0_SetPMR(1);    //PIT0中断时间设置为1ms
     TPIT1_SetPMR(1000); //PIT1中断时间设置为1000ms
-    //TPIT1_ENABLE();     //PIT1使能
-
+    TPIT1_ENABLE();     //PIT1使能
+    
 	/*DMA模块初始化*/
 	//TDMAx_Init(1);      //初始化DMA模块1，用于HREF获取图像数据
 	//TDMAx_Init(2);      
 	TDMAx_Init(3);      //初始化DMA模块3，用于PCLK获取图像数据
     //SET_DMA3_SAR(0x40100030);//DMA3源地址设为 A0-A7 的输入引脚地址
-TPIT1_ENABLE();     //PIT1使能
+    //MCF_DMA3_SAR = (vuint32)0x40100030;
     //MCF_DMA2_BCR = 10;
     //MCF_DMA2_DCR |=  MCF_DMA_DCR_EEXT ;//外部触发
-while(1)
-{
-    
-}
+    sprintf(TXBuffer,"%u-",MCF_GPIO_PTCPAR);
+    TUart0_Puts(TXBuffer);
+
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
