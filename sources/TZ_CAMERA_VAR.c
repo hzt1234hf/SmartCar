@@ -55,6 +55,8 @@
     uint8 img_BuxianCnt;
     uint8 img_BuxianBool;
 
+    uint8 singleLineState;   //单线状态
+
     int8 leftEdgeFind = 0,rightEdgeFind = 0;		//左右边界是否找到标志量
     uint8 leftEdgeMissCnt = 0,rightEdgeMissCnt = 0;	//左右边界miss个数计数
     int8 leftEdgeBool = 1,rightEdgeBool = 1;		//左右边界

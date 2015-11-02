@@ -51,7 +51,7 @@ int main(void)
 
 	/*串口初始化*/
 	//TUartx_INIT(2);     //串口2初始化
-	//TUartx_INIT(1);     //串口1初始化
+	TUartx_INIT(1);     //串口1初始化
     TUartx_INIT(0);     //串口0初始化
     TUart0_DMAInit();
 
@@ -96,7 +96,7 @@ int main(void)
 
 	/*串口测试*/
 	TUart0_Puts("Hello MCF52259 send by TUART0!\r\n");
-	//TUart1_Puts("Hello MCF52259 send by TUART1!\r\n");
+	TUart1_Puts("Hello MCF52259 send by TUART1!\r\n");
 	//TUart2_Puts("Hello MCF52259 send by TUART2!\r\n");
 
 	/*DMA模块初始化*/
@@ -135,7 +135,7 @@ int main(void)
 	/*外部中断初始化*/
 	//TEPORTx_Init(1);    //行外部中断初始化
 
-    //TEPORTx_Init(7);    //场外部中断初始化
+    TEPORTx_Init(7);    //场外部中断初始化
     
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;

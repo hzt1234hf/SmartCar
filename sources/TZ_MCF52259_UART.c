@@ -21,6 +21,8 @@
 */
 char TXBuffer[100];
 char RXBuffer[100];
+uint8 uartMode = 0;
+
 void TUartx_INIT(uint8 x){
     uint16 ubgs;
     switch(x){
@@ -211,24 +213,73 @@ __declspec(interrupt) void UART0_DMA_interrupt(void){
 __declspec(interrupt) void UART0_interrupt(void){
 
     uint8 a;
-    TUart0_Putchar('A');
     if(MCF_UART0_USR&MCF_UART_USR_RXRDY){
         a = MCF_UART0_URB;
-        TUart0_Putchar(a);
-        TUart0_Putchar('+');
+        sprintf(TXBuffer,"data:%u\n",a);
+        TUart0_Puts(TXBuffer);
     }
 
 }
 __declspec(interrupt) void UART1_interrupt(void){
 
     uint8 a;
-    TUart1_Putchar('B');
     if(MCF_UART1_USR&MCF_UART_USR_RXRDY){
         a = MCF_UART1_URB;
-        TUart1_Putchar(a);
-        TUart1_Putchar('+');
+        switch(a){
+            case 200:{
+                startend = 1;
+                TUart1_Puts("停车\n");
+             }break;
+            case 201:{
+                startend = 0;
+                TUart1_Puts("启动\n");
+             }break;
+            case 202:{
+                uartMode = 1;
+                TUart1_Puts("Change To Mode 1(改P值)\n");
+            }break;
+            case 203:{
+                uartMode = 2;
+                TUart1_Puts("Change To Mode 2(改D值)\n");
+            }break;
+            case 210:{
+                baseSpeed++;
+                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                TUart1_Puts(TXBuffer);
+            }break;
+            case 211:{
+                baseSpeed--;
+                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                TUart1_Puts(TXBuffer);
+            }break;
+            case 212:{
+                baseSpeed+=5;
+                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                TUart1_Puts(TXBuffer);
+            }break;
+            case 213:{
+                baseSpeed-=5;
+                sprintf(TXBuffer,"速度:%u\n",baseSpeed);
+                TUart1_Puts(TXBuffer);
+            }break;
+            default:{
+                switch(uartMode){
+                    case 1:{
+                        Kp_a = a/100.0;
+                        sprintf(TXBuffer,"Curremnt P:0.%u\n",a);
+                        TUart1_Puts(TXBuffer);
+                    }break;
+                    case 2:{
+                        Kd_a = a/100.0;
+                        sprintf(TXBuffer,"Curremnt D:0.%u\n",a);
+                        TUart1_Puts(TXBuffer);
+                    }break;
+                }
+            }
+        }
+        //sprintf(TXBuffer,"data:%u\n",a);
+        //TUart1_Puts(TXBuffer);
     }
-
 }
 __declspec(interrupt) void UART2_interrupt(void){
 

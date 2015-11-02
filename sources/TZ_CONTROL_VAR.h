@@ -72,6 +72,7 @@ extern uint8 lenOfSpeed_Cnt;   //速度指向的图像行数减去下幅图像指向的行数的计数
 extern int lenOfSpeed_Row;   //速度指向的图像行数
 
 /*电机相关变量*/
+extern uint16 baseSpeed;       //基础速度
 
 extern float leftMotorBase;
 extern float rightMotorBase;

@@ -285,6 +285,7 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
 #endif
 
 #if 1
+#if 0
     switch(enCoder){
         case 0:{Kp_a = 0.5;Kd_a = 0.1;}break;
         case 1:{Kp_a = 0.5;Kd_a = 0.3;}break;
@@ -304,6 +305,7 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
         case 15:{Kp_a = 0.65;Kd_a = 0.7;}break;
         default:{Kp_a = 1;Kd_a = 0;}break;
     }
+#endif
     for(row = 49;row>30;row--){
         if((img_EdgeInfo[row][3] == 5 || img_EdgeInfo[row][3] == 7 )){
             row++;
@@ -311,10 +313,10 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
         }
     }
     motorCnt = ((img_EdgeInfo[row][2] - 80)/80.0*350);
-    sprintf(TXBuffer,"%d\t%d\t",img_EdgeInfo[row][2] - 80,motorCnt);
-    TUart0_Puts(TXBuffer);
+    //sprintf(TXBuffer,"%d\t%d\t",img_EdgeInfo[row][2] - 80,motorCnt);
+    //TUart0_Puts(TXBuffer);
 
-    SetSpeed = 160;
+    SetSpeed = baseSpeed;
 #endif
 #if 0
     for(row = 49;row>0;row--){
@@ -502,6 +504,10 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
     */
 
 #endif
+    if(startend){
+        SetAngle = 2880;
+        SetSpeed = 0;
+    }
 /*********************************************/
 /*****************电机PID*********************/
 /*********************************************/
@@ -548,8 +554,8 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
     //pwmCnt = (uint16)(pwmCnt + (Kp_a * (err_a - err_alast + Ki_a * err_a + Kd_a * (err_a - 2 * err_alast - err_aprev))));
     //err_aprev = err_alast;
     err_alast = err_a;
-    sprintf(TXBuffer,"%d\n",pwmCnt);
-    TUart0_Puts(TXBuffer);
+    //sprintf(TXBuffer,"%d\n",pwmCnt);
+    //TUart0_Puts(TXBuffer);
 
 /*********************************************/
 /*********************************************/
@@ -559,10 +565,19 @@ __declspec(interrupt:0) void TPIT0_interrupt(void){
     if(pwmCnt<2510)
         pwmCnt = 2510;
 
-    TPWM45_SetDTY(pwmCnt);
+    if(startend){
+        TPWM45_SetDTY(2880);
 
-    LEFT_MOTOR_PWM((uint8)leftMSPwm);
-    RIGHT_MOTOR_PWM((uint8)rightMSPwm);
+        LEFT_MOTOR_PWM(0);
+        RIGHT_MOTOR_PWM(0);
+
+    }else{
+
+        TPWM45_SetDTY(pwmCnt);
+
+        LEFT_MOTOR_PWM((uint8)leftMSPwm);
+        RIGHT_MOTOR_PWM((uint8)rightMSPwm);
+    }
 
 #elif 0
 //电机PID测试程序
@@ -911,6 +926,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
 
     centerLineSub = 0;
     edgeMissBool = 0;
+    singleLineState = 0;
 
     for(row = IMG_H-1;row>=0;row --){
         debugCnt = 1;
@@ -922,17 +938,83 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
         img_EdgeInfo[row][4] = 0;
         world_EdgeInfo[row] = 0;
 
-
         //edgeOffset = (uint8)(colCorrectTable[row]*1.8+1);
         edgeOffset = 13;
 
+        //Image_Ptr[row * 20 + leftEdgeStart/8] |= 1<<(7-leftEdgeStart&0x07);
+        //Image_Ptr[row * 20 + rightEdgeStart/8] |= 1<<(7-rightEdgeStart&0x07);
         //Image_Ptr[Image_Row[row] * 20 + leftEdgeStart/8] |= 1<<(7-leftEdgeStart&0x07);
         //Image_Ptr[Image_Row[row] * 20 + rightEdgeStart/8] |= 1<<(7-rightEdgeStart&0x07);
         //Image_Ptr[Image_Row[row] * 20 + leftEdgeEnd/8] &= ~(1<<(7-leftEdgeEnd&0x07));
         //Image_Ptr[Image_Row[row] * 20 + rightEdgeEnd/8] &= ~(1<<(7-rightEdgeEnd&0x07));
         //Image_Ptr[Image_Row[row] * 20 + centerLine/8] |= 1<<(7-centerLine&0x07);
 
-        if(ImageC[row][centerLine] == 0x80){    //若中间线为黑线，则表示检测到结尾
+        if(0&&singleLineState||ImageC[row][leftEdgeEnd] == 0||ImageC[row][rightEdgeEnd] == 0){
+            if(singleLineState){
+                u = img_EdgeInfo[row+1][2]+10;
+                v = img_EdgeInfo[row+1][2]-10;
+            }else if(row>48){
+                u = 100;
+                v = 60;
+            }else{
+                u = rightEdgeStart;
+                v = leftEdgeStart;
+            }
+            singleLineState = 0;
+            for(col = u;col > v;col--){
+                if((ImageC[row][col]&0x80) && (ImageC[row][col+1] == 0 || ImageC[row][col-1] == 0)){
+                    singleLineState = 1;
+                    img_EdgeInfo[row][2] = col;
+                    if(row>=25){
+                        img_EdgeRowRatio = (50.0 - (row-25))/50.0;       //行比率计算
+                    }else{
+                        img_EdgeRowRatio = (50.0 - (25-row))/50.0;       //行比率计算
+                    }
+                    if(row<49&&img_EdgeInfo[row+1][0]){
+                        img_EdgeInfo[row][0] = img_EdgeInfo[row+1][0] + (col - img_EdgeInfo[row+1][2])*0.5;
+                    }else{
+                        img_EdgeInfo[row][0] = col - colCorrectTable[row]*10*img_EdgeRowRatio;
+                    }
+                    if(row<49&&img_EdgeInfo[row+1][1]){
+                        img_EdgeInfo[row][1] = img_EdgeInfo[row+1][1] - (col - img_EdgeInfo[row+1][2])*0.5;
+                    }else{
+                        img_EdgeInfo[row][1] = col + colCorrectTable[row]*10*img_EdgeRowRatio;
+                    }
+
+                    leftEdgeFind = 1;
+                    rightEdgeFind = 1;
+
+                    edgetempa = img_EdgeInfo[row+1][0];
+                    edgetempb = img_EdgeInfo[row][0] - edgetempa;
+                    if(edgetempa&&edgetempb){
+                        if(row<49){
+                            if(img_EdgeInfo[row+1][0] == img_EdgeInfo[row][0]){
+                                leftEdgeOffset = 0;
+                            }
+                            leftEdgeOffset = (0.1*leftEdgeOffset + 0.9*edgetempb)*2;
+                        }else{
+                            leftEdgeOffset = 0;
+                        }
+                    }
+
+                    edgetempa = img_EdgeInfo[row+1][1];
+                    edgetempb = img_EdgeInfo[row][1] - edgetempa;
+                    if(edgetempa&&edgetempb){
+                        if(row<49){
+                            if(img_EdgeInfo[row+1][1] == img_EdgeInfo[row][1]){
+                                rightEdgeOffset = 0;
+                            }
+                            rightEdgeOffset = (0.1*rightEdgeOffset + 0.9*edgetempb)*2;
+                        }else{
+                            rightEdgeOffset = 0;
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+        if(ImageC[row][centerLine] == 0x80&&leftEdgeFind==0&&rightEdgeFind==0){    //若中间线为黑线，则表示检测到结尾
             if((row>48||(row>5&&img_EdgeInfo[row+1][3] == 1))&&ImageC[(uint8)(row*0.875)][centerLine] != 0x80){
                 u = (int)(row / 12);
                 while(u>=0){
@@ -950,77 +1032,81 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 break;
             }
         }
-        if(ImageC[row][leftEdgeStart]&0x80){//左边线开始时丢失，暂时未解决
-            leftEdgeStart = centerLine;
-        }
-        for(col = leftEdgeStart;col > leftEdgeEnd;col--){     //左边线寻找
-            if((ImageC[row][col]&0x80) && ImageC[row][col+1] == 0 ){
-                if(leftEdgeMissCnt&&leftEdgeMissCnt>= 49-row){
-                    leftEdgeMissCnt -- ;
-                    break;
-                }
-                img_EdgeInfo[row][0] = col;                         //获取图像边界信息
-                //world_EdgeInfo[row][0] = correctTable[row][col];    //获取世界边界信息
-                leftEdgeFind = 1;   //左边线标志量置位
-
-                /*左边偏差值计算*/
-                edgetempa = img_EdgeInfo[row+1][0];
-                edgetempb = col - edgetempa;
-                if(edgetempa&&edgetempb){
-                    if(row<49){
-                        if(img_EdgeInfo[row+1][0] == col){
-                            leftEdgeOffset = 0;
-                            break;
-                        }
-                        leftEdgeOffset = (0.1*leftEdgeOffset + 0.9*edgetempb)*3.5;
-                    }else{
-                        leftEdgeOffset = 0;
+        if(leftEdgeFind==0){
+            if(ImageC[row][leftEdgeStart]&0x80){//左边线开始时丢失，暂时未解决
+                leftEdgeStart = centerLine;
+            }
+            for(col = leftEdgeStart;col > leftEdgeEnd;col--){     //左边线寻找
+                if((ImageC[row][col]&0x80) && ImageC[row][col+1] == 0){
+                    if(leftEdgeMissCnt&&leftEdgeMissCnt>= 49-row){
+                        leftEdgeMissCnt -- ;
+                        break;
                     }
-                }
-                //更新最后的左边线的行列
-                if(ImageC[row][centerLine] != 0x80){
-                    leftLastLine[0] = (uint8)row;
-                    leftLastLine[1] = (uint8)img_EdgeInfo[row][0];
-                }
-                break;
+                    img_EdgeInfo[row][0] = col;                         //获取图像边界信息
+                    //world_EdgeInfo[row][0] = correctTable[row][col];    //获取世界边界信息
+                    leftEdgeFind = 1;   //左边线标志量置位
 
+                    /*左边偏差值计算*/
+                    edgetempa = img_EdgeInfo[row+1][0];
+                    edgetempb = col - edgetempa;
+                    if(edgetempa&&edgetempb){
+                        if(row<49){
+                            if(img_EdgeInfo[row+1][0] == col){
+                                leftEdgeOffset = 0;
+                                break;
+                            }
+                            leftEdgeOffset = (0.1*leftEdgeOffset + 0.9*edgetempb)*3.5;
+                        }else{
+                            leftEdgeOffset = 0;
+                        }
+                    }
+                    //更新最后的左边线的行列
+                    if(ImageC[row][centerLine] != 0x80){
+                        leftLastLine[0] = (uint8)row;
+                        leftLastLine[1] = (uint8)img_EdgeInfo[row][0];
+                    }
+                    break;
+
+                }
             }
         }
 
-        if(ImageC[row][rightEdgeStart]&0x80){//右边线开始时丢失，暂时未解决
-            rightEdgeStart = centerLine;
-        }
-        for(col = rightEdgeStart;col < rightEdgeEnd;col++){   //右边线寻找
-            if((ImageC[row][col]&0x80) && ImageC[row][col-1] == 0 ){
-                if(rightEdgeMissCnt&&rightEdgeMissCnt>= 49-row){
-                    rightEdgeMissCnt -- ;
-                    break;
-                }
-                img_EdgeInfo[row][1] = col;                         //获取图像边界信息
-                //world_EdgeInfo[row][1] = correctTable[row][col];    //获取世界边界信息
-                rightEdgeFind = 1;  //右边线标志量置位
-
-                /*左边偏差值计算*/
-                edgetempa = img_EdgeInfo[row+1][1];
-                edgetempb = col - edgetempa;
-                if(edgetempa&&edgetempb){
-                    if(row<49){
-                        if(img_EdgeInfo[row+1][1] == col){
-                            rightEdgeOffset = 0;
-                            break;
-                        }
-                        rightEdgeOffset = (0.1*rightEdgeOffset + 0.9*edgetempb)*3.5;
-                    }else{
-                        rightEdgeOffset = 0;
+        if(rightEdgeFind==0){
+            if(ImageC[row][rightEdgeStart]&0x80){//右边线开始时丢失，暂时未解决
+                rightEdgeStart = centerLine;
+            }
+            for(col = rightEdgeStart;col < rightEdgeEnd;col++){   //右边线寻找
+                if((ImageC[row][col]&0x80) && ImageC[row][col-1] == 0 && !rightEdgeFind){
+                    if(rightEdgeMissCnt&&rightEdgeMissCnt>= 49-row){
+                        rightEdgeMissCnt -- ;
+                        break;
                     }
-                }
-                //更新最后的右边线的行列
-                if(ImageC[row][centerLine] != 0x80){
-                    rightLastLine[0] = (uint8)row;
-                    rightLastLine[1] = (uint8)img_EdgeInfo[row][1];
-                }
-                break;
+                    img_EdgeInfo[row][1] = col;                         //获取图像边界信息
+                    //world_EdgeInfo[row][1] = correctTable[row][col];    //获取世界边界信息
+                    rightEdgeFind = 1;  //右边线标志量置位
 
+                    /*左边偏差值计算*/
+                    edgetempa = img_EdgeInfo[row+1][1];
+                    edgetempb = col - edgetempa;
+                    if(edgetempa&&edgetempb){
+                        if(row<49){
+                            if(img_EdgeInfo[row+1][1] == col){
+                                rightEdgeOffset = 0;
+                                break;
+                            }
+                            rightEdgeOffset = (0.1*rightEdgeOffset + 0.9*edgetempb)*3.5;
+                        }else{
+                            rightEdgeOffset = 0;
+                        }
+                    }
+                    //更新最后的右边线的行列
+                    if(ImageC[row][centerLine] != 0x80){
+                        rightLastLine[0] = (uint8)row;
+                        rightLastLine[1] = (uint8)img_EdgeInfo[row][1];
+                    }
+                    break;
+
+                }
             }
         }
 
@@ -1041,6 +1127,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             rightEdgeOffset = -rightEdgeOffset;
         abc[row][8] = leftEdgeOffset;
         abc[row][9] = rightEdgeOffset;
+        abc[row][10] = singleLineState;
 
         if(leftEdgeFind&rightEdgeFind){
             /*1 设置中线类型*/
@@ -1053,7 +1140,9 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             rightEdgeEnd  =  img_EdgeInfo[row][1] - rightEdgeOffset;    //改变下一行右边线搜寻结束位置
 
             /*3 求出中线的位置*/
-        	img_EdgeInfo[row][2]    = (img_EdgeInfo[row][0] + img_EdgeInfo[row][1])*0.5;     //求取图像坐标中线
+            if(!singleLineState){
+        	    img_EdgeInfo[row][2]    = (img_EdgeInfo[row][0] + img_EdgeInfo[row][1])*0.5;     //求取图像坐标中线
+        	}
         	world_EdgeInfo[row]  = correctTable[row][img_EdgeInfo[row][2]]; //求取世界坐标中线
 
             /*4 保存最后一次中线的行列*/
@@ -1077,8 +1166,8 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
 
             /*2 预测并设置下一行边线的范围*/
             if(edgeMissBool){
-                leftEdgeStart = centerLine;             //重置下一行左边线搜寻开始位置
-                rightEdgeStart = centerLine + 1;        //重置下一行右边线搜寻开始位置
+                leftEdgeStart = centerLine-5;             //重置下一行左边线搜寻开始位置
+                rightEdgeStart = centerLine + 5;        //重置下一行右边线搜寻开始位置
                 if(leftEdgeOffset){
                     leftEdgeEnd = leftEdgeEnd + leftEdgeOffset*0.2;
                 }else{
@@ -1094,12 +1183,14 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 if(rightEdgeEnd - rightEdgeStart < 20)
                     rightEdgeEnd = rightEdgeStart + 20;
             }else if(leftEdgeOffset == 0){
-                rightEdgeStart = centerLine;
+                //rightEdgeStart = centerLine+5;
+                rightEdgeStart = centerLine - rightEdgeOffset*0.2;
                 rightEdgeEnd = rightEdgeEnd + rightEdgeOffset*0.2;              //预测位置
             }else{
                 leftEdgeStart =  img_EdgeInfo[row][0] + leftEdgeOffset;     //改变下一行左边线搜寻开始位置
                 leftEdgeEnd   =  img_EdgeInfo[row][0] - leftEdgeOffset;     //改变下一行左边线搜寻结束位置
-                rightEdgeStart = centerLine;
+                //rightEdgeStart = centerLine+5;
+                rightEdgeStart = centerLine - rightEdgeOffset*0.2;
                 rightEdgeEnd = rightEdgeEnd + rightEdgeOffset*0.2;              //预测位置
 
                 if(leftEdgeStart-leftEdgeEnd<20)
@@ -1131,8 +1222,8 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
 
             /*2 预测并设置下一行边线的范围*/
             if(edgeMissBool){
-                leftEdgeStart = centerLine;             //重置下一行左边线搜寻开始位置
-                rightEdgeStart = centerLine + 1;        //重置下一行右边线搜寻开始位置
+                leftEdgeStart = centerLine - 5;             //重置下一行左边线搜寻开始位置
+                rightEdgeStart = centerLine + 5;        //重置下一行右边线搜寻开始位置
                 if(leftEdgeOffset){
                     leftEdgeEnd = leftEdgeEnd + leftEdgeOffset*0.2;
                 }else{
@@ -1148,12 +1239,14 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 if(rightEdgeEnd - rightEdgeStart < 20)
                     rightEdgeEnd = rightEdgeStart + 20;
             }else if(rightEdgeOffset==0){
-                leftEdgeStart = centerLine;
+                //leftEdgeStart = centerLine - 5;
+                leftEdgeStart = centerLine - leftEdgeOffset*0.2;
                 leftEdgeEnd = leftEdgeEnd - leftEdgeOffset*0.2;
             }else{
                 rightEdgeStart = img_EdgeInfo[row][1] + rightEdgeOffset;     //改变下一行右边线搜寻开始位置
                 rightEdgeEnd =   img_EdgeInfo[row][1] - rightEdgeOffset;     //改变下一行右边线搜寻结束位置
-                leftEdgeStart = centerLine;
+                //leftEdgeStart = centerLine - 5;
+                leftEdgeStart = centerLine - leftEdgeOffset*0.2;
                 leftEdgeEnd = leftEdgeEnd - leftEdgeOffset*0.2;
 
                 if(rightEdgeEnd - rightEdgeStart < 20)
@@ -1185,9 +1278,9 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             img_EdgeInfo[row][2] = centerLine;
 
             /*2 预测并设置下一行边线的范围*/
-            leftEdgeStart = centerLine;             //重置下一行左边线搜寻开始位置
+            leftEdgeStart = centerLine - 5 ;             //重置下一行左边线搜寻开始位置
             leftEdgeEnd = leftEdgeEnd - leftEdgeOffset*0.2;
-            rightEdgeStart = centerLine + 1;        //重置下一行右边线搜寻开始位置
+            rightEdgeStart = centerLine + 5;        //重置下一行右边线搜寻开始位置
             rightEdgeEnd = rightEdgeEnd - rightEdgeOffset*0.2;
             if(edgeMissBool){
                 leftEdgeEnd = leftEdgeEnd + 2;
@@ -1220,7 +1313,7 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
                 edgeMissBool = 1;
 
         }
-        if(centerLine>160){
+        if(centerLine>159){
             centerLine = 159;
         }else if(centerLine<0){
             centerLine = 1;
@@ -1747,9 +1840,9 @@ __declspec(interrupt:0)  void TPIT1_interrupt(void){
             if(img_EdgeTemp>159||img_EdgeTemp<0)
                 continue;
             //Image_Ptr[Image_Row[row] * 20 + (uint8)(img_EdgeTemp/8)] |= 1<<(7-img_EdgeTemp&0x07);
-            //Image_Ptr[row * 40 + (uint8)(img_EdgeTemp/8)] |= 1<<(7-img_EdgeTemp&0x07);
+            Image_Ptr[row * 40 + (uint8)(img_EdgeTemp/8)] |= 1<<(7-img_EdgeTemp&0x07);
             //Image_Ptr[Image_Row[row] * 20 + (uint8)(world_EdgeInfo[row]/8)] |= 1<<(7-(int)world_EdgeInfo[row]&0x07);
-            Image_Ptr[row * 40 + (uint8)(world_EdgeInfo[row]/8)] |= 1<<(7-(int)world_EdgeInfo[row]&0x07);
+            //Image_Ptr[row * 40 + (uint8)(world_EdgeInfo[row]/8)] |= 1<<(7-(int)world_EdgeInfo[row]&0x07);
         }
     }
     debugCnt = 10;

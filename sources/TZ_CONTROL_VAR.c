@@ -78,6 +78,8 @@ int lenOfSpeed_Row;   //速度指向的图像行数
 
 
 /*电机相关变量*/
+uint16 baseSpeed = 160;       //基础速度
+
 float leftMotorBase;        //左GPT计数器基准时间
 float rightMotorBase;       //右GPT计数器基准时间
 

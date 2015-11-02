@@ -84,6 +84,7 @@ extern int img_BuxianEndRow;
 extern uint8 img_BuxianCnt;
 extern uint8 img_BuxianBool;
 
+extern uint8 singleLineState;   //单线状态
 
 extern int8 leftEdgeFind,rightEdgeFind;			//左右边界是否找到标志量
 extern uint8 leftEdgeMissCnt,rightEdgeMissCnt;	//左右边界miss个数计数

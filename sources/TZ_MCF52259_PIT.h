@@ -38,4 +38,8 @@ extern int length(int a,int b);
 
 extern int SetSpeed;             //定义设定值
 
+extern float Kp,Ki,Kd;             //定义比例、积分、微分系数
+extern float Kp_a,Ki_a,Kd_a;       //定义比例、积分、微分系数
+
+
 #endif

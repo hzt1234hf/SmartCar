@@ -129,7 +129,7 @@ __declspec(interrupt) void EPORT7_interrupt(void){
             MCF_GPIO_SETTJ |= (MCF_GPIO_SETTJ_SETTJ2 | MCF_GPIO_SETTJ_SETTJ3); //置位s0 s1 设置频率为100%
 */
             if(chang >= 49){
-                //showImg();
+                showImg();
                 chang = 0;
             }
             /*
