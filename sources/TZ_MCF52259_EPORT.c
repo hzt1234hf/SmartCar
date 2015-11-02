@@ -75,6 +75,8 @@ __declspec(interrupt) void EPORT7_interrupt(void){
 
     switch(Cnt_VSYN){
         case 1:{
+            sprintf(TXBuffer,"%u+",bool);
+            TUart0_Puts(TXBuffer);
             MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
             MCF_DMA3_DAR = (vuint32)&Image[0];      //重设数组地址
             MCF_DMA3_BCR = IMG_SIZE;                //重设大小
@@ -93,6 +95,8 @@ __declspec(interrupt) void EPORT7_interrupt(void){
 
         }break;
         case 6:{
+            sprintf(TXBuffer,"%u+",bool);
+            TUart0_Puts(TXBuffer);
             if(chang >= 75){
                 showImg();
                 chang = 0;

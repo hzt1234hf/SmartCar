@@ -3,7 +3,7 @@
  *
  */
 #include "DIY_ComDef.h"
-uint32 sysOsciFre = 80000000;//默认晶振频率
+uint32 sysOsciFre = 128000000;//默认晶振频率
 
 void TZ_PLLinit(uint8 mode){
     switch(mode){
@@ -35,10 +35,11 @@ int main(void)
 {
 	EnableInterrupts();//打开总中断
 
-	TZ_PLLinit( PLL_80MHZ );//PLL初始化，时钟设置为80Mhz，可超频到144Mhz
+	TZ_PLLinit( PLL_128MHZ );//PLL初始化，时钟设置为80Mhz，可超频到144Mhz
 
 	//TADCx_Init();
     //TADC_Test();
+
 
 	/*串口初始化*/
 	TUartx_INIT(2);     //串口2初始化
@@ -93,18 +94,19 @@ int main(void)
 	/*PWM模块   初始化*/
 	TPWMx_INIT(0);  //左电机PWM初始化 左右根据接线而定
 	TPWMx_INIT(2);  //右电机PWM初始化
-	TPWMx_INIT(4);  //舵机PWM初始化
+	//TPWMx_INIT(4);  //舵机PWM初始化
 
 	/*GPT模块初始化*/
 	TGPTx_Init(0);  //编码器1输入捕获模式初始化
 	TGPTx_Init(1);  //编码器2输入捕获模式初始化
-	TGPTx_Init(3);  //颜色传感器输入捕获模式初始化
+	//TGPTx_Init(3);  //颜色传感器输入捕获模式初始化
     TGPT0_ENINTER();   //关GPT0中断
     TGPT1_ENINTER();   //关GPT2中断
     TGPT3_DISINTER();   //关GPT4中断
 
 	/*外部中断初始化*/
 	//TEPORTx_Init(1);    //行外部中断初始化
+
 	TEPORTx_Init(7);    //场外部中断初始化
 
 	/*定时器初始化*/
@@ -112,23 +114,22 @@ int main(void)
     TPITx_Init(1);      //初始化PIT1
     TPIT0_SetPMR(1);    //PIT0中断时间设置为1ms
     TPIT1_SetPMR(1); //PIT1中断时间设置为1000ms
-    //TPIT1_ENABLE();     //PIT1使能
+    //TPIT0_ENABLE();     //PIT1使能
 
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
-    pwmCnt = 3700;
+    
+    while(1){}
+	pwmCnt = 3050;//正常值为3000，舵机片有一点点，因此偏移一点
     TPWM45_SetDTY(pwmCnt);
-
-	while(1){}
-	pwmCnt = 3150;
 	while(1){
-        while(pwmCnt<=4250){
+        while(pwmCnt<=3450){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt++;
             delay2();
         }
-        while(pwmCnt>=3150){
+        while(pwmCnt>=2700){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt--;
             delay2();

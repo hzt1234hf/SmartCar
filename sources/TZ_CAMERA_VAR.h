@@ -51,7 +51,8 @@ extern uint16 Img_GAMvalue;
 extern uint8 ImageC[IMG_H][IMG_W];
 
 extern vuint8 data,temp;
-extern int8 tempa,tempb;
+extern volatile int tempa,tempb;
+extern volatile int tempc,tempd,tempe;
 extern int16 row,col;				//行，列，也可用u v代替
 extern int16 u,v;
 
@@ -72,8 +73,12 @@ extern int8 leftEdgeFind,rightEdgeFind;			//左右边界是否找到标志量
 extern int8 leftEdgeMissCnt,rightEdgeMissCnt;	//左右边界miss个数计数
 extern int8 leftEdgeBool,rightEdgeBool;			//左右边界
 
+extern uint8 edgeBothMissCnt;
+
 extern uint8 leftJPMissLine,rightJPMissLine;
 extern uint8 leftLastLine[2],rightLastLine[2];
+extern uint8 lastLine[2];
+
 extern uint8 leftEdgeOffset,rightEdgeOffset;//左右限幅滤波变量
 extern int8 edgeOffset;
 

@@ -26,41 +26,42 @@ extern float lineResSteerAngle;
 
 //中距离曲率控制变量
 
-extern uint8 threePoint[3][3];
+extern int threePoint[3][3];
 extern uint8 tpStartDist;
 extern uint8 tpEndDist;
 extern uint8 midThreePointCol1,midThreePointCol2;
 
-extern uint8 radiusOfCurva_1;
+extern float radiusOfCurva_1;
 
 extern uint8 tpResSteerAngle;
 
 //远距离曲率控制变量
 
-extern uint8 threePoint2[3][3];
+extern int threePoint2[3][3];
 extern uint8 midThreePoint2Col1,midThreePoint2Col2;
 extern uint8 tp2RowCnt;
 extern uint8 tp2ColCnt;
 
-extern uint8 radiusOfCurva_2;
+extern float radiusOfCurva_2;
 
 extern uint8 tp2ResSteerAngle;
 
 /*电机相关变量*/
 
-extern uint8 leftMotorBase;
-extern uint8 rightMotorBase;
+extern float leftMotorBase;
+extern float rightMotorBase;
 
 extern uint16 leftMSCnt,rightMSCnt;           //左右电机GPT值\
 
-extern uint8 leftMotorMul;
-extern uint8 rightMotorMul;
+extern uint8 leftMotorSpeed;   //左右电机速度值
+extern uint8 rightMotorSpeed;  //左右电机速度值
+extern uint8 leftCnt,rightCnt;
+extern uint16 motorSpeed;
+extern float tanValue;
 
-extern uint16 leftMotorSpeed;   //左右电机速度值
-extern uint16 rightMotorSpeed;  //左右电机速度值
-
-extern uint8 leftMotorCnt;
-extern uint8 rightMotorCnt;
+extern uint16 leftMotorCnt[8];
+extern uint16 rightMotorCnt[8];
+extern uint16 motorCnt;
 
 extern uint16 allMotorCnt;
 
