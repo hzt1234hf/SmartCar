@@ -13,6 +13,6 @@ __declspec(interrupt) void TGPT0_interrupt(void);
 __declspec(interrupt) void TGPT1_interrupt(void);
 __declspec(interrupt) void TGPT3_interrupt(void);
 
-extern uint16 cnt;
+extern uint16 leftSSSum,rightSSSum;
 
 #endif

@@ -33,5 +33,9 @@ extern void TPITx_Init(uint8 mode);
 __declspec(interrupt:0) void TPIT0_interrupt(void);
 __declspec(interrupt:0) void TPIT1_interrupt(void);
 extern uint16 sqrt_16(unsigned int M);
+extern int16 invSqrt(int a,int b);
+extern int length(int a,int b);
+
+extern int SetSpeed;             //定义设定值
 
 #endif

@@ -99,7 +99,7 @@ void TZ_OV7725_Init(){
     SCCB_WriteByte(OV7725_SDE          , 0x04);
     SCCB_WriteByte(OV7725_BRIGHT       , 0x00);
 
-    SCCB_WriteByte(OV7725_CNST         , 80);
+    SCCB_WriteByte(OV7725_CNST         , 50);
 
     SCCB_WriteByte(OV7725_SIGN         , 0x06);
     SCCB_WriteByte(OV7725_UVADJ0       , 0x11);

@@ -3,12 +3,13 @@
 
 
     vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
-    vuint8 Image_ToPC[IMG_SIZE+4];
+    uint8 Image_ToPC[IMG_SIZE+4];
     vuint8 Image2[50][CAMERA_W_8];
+    vuint8 ImageC[IMG_H][IMG_W];
+    uint8 *Image_Ptr;
 
     vuint8 Image_Row[50] = {14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,64,67,70,73,76,79,82,85,89,93,97,101,105,109,114,119};
     //需要提取的行数
-
     //vuint8 Image_cotryRow[] = {0,0,0,0,0,0,0,0,0,0,0,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,0,33,0,35,0,37,0,39,0,41,0,43,0,45,0,47,0,49,0,51,0,53,0,55,0,57,0,0,60,0,0,63,0,0,66,0,0,69,0,0,72,0,0,75,0,0,78,0,0,81,0,0,0,85,0,0,0,89,0,0,0,93,0,0,0,97,0,0,0,101,0,0,0,0,106,0,0,0,0,111,0,0,0,0,116,0,0,0,};
 #if (WORLD_ACRA_DATATYPE == 1)
     vuint8 world_ActualRange[50] = {220,213,206,200,194,188,183,177,172,167,163,158,154,150,146,142,138,134,131,127,121,115,109,104,98,94,89,85,80,77,73,69,66,62,57,53,49,45,41,37,34,30,26,22,18,15,11,8,4,1};
@@ -18,66 +19,74 @@
 #endif
 
 
-    vuint8 *Image_Ptr;
-    uint16 Img_GAMvalue = 0;
-
-    uint8 ImageC[IMG_H][IMG_W];
-
-
-    vuint8 data,temp;
-    volatile int tempa,tempb;
-    volatile int tempc,tempd,tempe;
-    int16 row,col;											//行，列，也可用u v代替
-    int16 u,v;
+    vuint32 data,temp;
+    int32 tempa,tempb;
+    int32 tempc,tempd,tempe;
+    int row,col;											//行，列，也可用u v代替
+    int rowt,colt;
+    int range;
+    int u,v;
 
  /*以下部分为纵向扫描所用变量*/
 
-    int16 img_EdgeInfo[IMG_H][5] = {0};//图像边界信息
+//左右结束为止都为0<= x <160
+    int leftEdgeStart;  	//左边线检测的起始位置
+    int leftEdgeEnd;      //左边线检测的结束位置
+    int leftEdgeOffset;
+
+    int rightEdgeStart;	//右边线检测的起始位置
+    int rightEdgeEnd;		//右边线检测的结束位置
+    int rightEdgeOffset;
+
+    int edgetempa,edgetempb;
+
+    int img_EdgeInfo[IMG_H][5] = {0};//图像边界信息
+    //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
+    int world_EdgeInfo[IMG_H][5] = {0};//世界边界信息
     //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
 
-    int16 world_EdgeInfo[IMG_H][5] = {0};//世界边界信息
-    //[0]：左边界 [1]：右边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率
+    int16 img_EdgeTemp;         //临时边界变量，用于临时存储
+    int16 img_EdgeTempRow;      //临时边界行数变量，用于临时存储
+    double img_EdgeRowRatio;   //行的位置比率
 
-    uint8 imgEdgeFill4[20][4];  //类型4 补线
-    uint8 imgEdgeFileStart;
-    uint8 imgEdgeFileEnd;
-    uint8 imgEdgeFill4Cnt;
-    int16 imgEdgeFill4Col,imgEdgeFill4Row;
+    int img_BuxianRow;
+    int img_BuxianEndRow;
+    uint8 img_BuxianCnt;
+    uint8 img_BuxianBool;
 
-    uint8 edgeFillMode;
+    int8 leftEdgeFind = 0,rightEdgeFind = 0;		//左右边界是否找到标志量
+    uint8 leftEdgeMissCnt = 0,rightEdgeMissCnt = 0;	//左右边界miss个数计数
+    int8 leftEdgeBool = 1,rightEdgeBool = 1;		//左右边界
 
-    int16 leftEdgeStart;  		//左边线检测的起始位置
-    int16 leftEdgeEnd;      			//左边线检测的结束位置
-    int16 rightEdgeStart;	//右边线检测的起始位置
-    int16 rightEdgeEnd;		//右边线检测的结束位置
-
-    int8 leftEdgeFind = 0,rightEdgeFind = 0;				//左右边界是否找到标志量
-    int8 leftEdgeMissCnt = 0,rightEdgeMissCnt = 0;	//左右边界miss个数计数
-    int8 leftEdgeBool = 1,rightEdgeBool = 1;				//左右边界
+    uint8 edgeOffset;
     uint8 edgeBothMissCnt = 0;
+    uint8 edgeMissBool;
 
-    uint8 leftJPMissLine = 0,rightJPMissLine = 0;
-    uint8 leftLastLine[2] = {0},rightLastLine[2] = {0};
-    uint8 lastLine[2];
+    int16 leftLastLine[2],rightLastLine[2];
+    int16 bothLastLine[2];
+    int16 lastLine[2];
 
-    uint8 leftEdgeOffset,rightEdgeOffset;//左右限幅滤波变量
-    int8 edgeOffset;
-
-    uint8 centerLine = CAMERA_W/2+1;        //最后的中线列位置记录变量
+    int centerLine = CAMERA_W/2+1;        //最后的中线列位置记录变量
+    int8 centerLineSub = 0;
     uint8 lastCenterLine = 0;
+
 /*以下部分为横向扫描所用变量*/
 
-    int16 img_ColEdgeInfo[IMG_W][6] = {0};//图像边界信息
+    int img_ColEdgeInfo[IMG_W][6] = {0};//图像边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
 
-    int16 world_ColEdgeInfo[IMG_W][6] = {0};//世界边界信息
+    int world_ColEdgeInfo[IMG_W][6] = {0};//世界边界信息
     //[0]：行上边界 [1]：行下边界 [2]：中线 [3]：获取到的边界信息 [4]：斜率\曲率 [5]：列位置
+
+    int imgEdgeFill4[10][4];  //类型4 补线
+    uint8 imgEdgeFill4Cnt;
+    int16 imgEdgeFill4Col,imgEdgeFill4Row;
 
     uint8 colEdgeEnable = 0;    //横向边界扫描使能变量 1：进行横向扫描 0：不进行
     uint8 colBool;              //是否获取到第一个横向扫描的点 标志位
     int16 firstCol,firstRow;    //获得的第一个点的信息
 
-    int8 direct = 0;            //横向扫描方向
+    int16 direct = 0;            //横向扫描方向
     uint8 colEnd = 0;           //横向扫描列结束位置
     uint8 colEdgeCnt = 0;       //横向扫描点个数计数
 
@@ -86,6 +95,8 @@
 
     int16 bottomEdgeStart;	//右边线检测的起始位置
     int16 bottomEdgeEnd;		//右边线检测的结束位置
+
+    uint16 top_bottomOffset;    //上下界限值
 
     int8 topEdgeFind = 0,bottomEdgeFind = 0;				//左右边界是否找到标志量
     int8 topEdgeMissCnt = 0,bottomEdgeMissCnt = 0;	//左右边界miss个数计数

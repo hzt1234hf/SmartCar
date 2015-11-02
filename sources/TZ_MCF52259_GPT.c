@@ -9,6 +9,7 @@
     3.注意要设置合理的预分频
 ）
 */
+uint16 leftSSSum = 0,rightSSSum = 0;
 
 void TGPTx_Init(uint8 mode){
     switch(mode){
@@ -20,9 +21,9 @@ void TGPTx_Init(uint8 mode){
             MCF_GPT_GPTCTL2 |= MCF_GPT_GPTCTL2_INPUT0_RISING;       //设置为下降沿检测
             MCF_GPT_GPTIE |= MCF_GPT_GPTIE_CI0;                     //使能输入捕获端口0的中断
             /*           设置预分频 pre = sys/2/（2^x）,这里x为3*/
-            MCF_GPT_GPTSCR2 |= MCF_GPT_GPTSCR2_PR(6);
+            MCF_GPT_GPTSCR2 |= MCF_GPT_GPTSCR2_PR(5);
 
-            leftMotorBase = 128*1000000/sysOsciFre; //128根据预分频
+            leftMotorBase = (float)(64*1000000.0/sysOsciFre); //128根据预分频
 
             MCF_GPT_GPTFLG1 = 0;                                    //清零中断标志寄存器
             MCF_GPT_GPTDDR &= ~MCF_GPT_GPTDDR_DDRT0;                //清零来设置为输入模式
@@ -40,9 +41,9 @@ void TGPTx_Init(uint8 mode){
             MCF_GPT_GPTCTL2 |= MCF_GPT_GPTCTL2_INPUT1_RISING;       //设置为下降沿检测
             MCF_GPT_GPTIE |= MCF_GPT_GPTIE_CI1;                     //使能输入捕获端口0的中断
             /*           设置预分频 pre = sys/2/（2^x）,这里x为3*/
-            MCF_GPT_GPTSCR2 |= MCF_GPT_GPTSCR2_PR(6);
+            MCF_GPT_GPTSCR2 |= MCF_GPT_GPTSCR2_PR(5);
 
-            rightMotorBase = 128*1000000/sysOsciFre; //128根据预分频
+            rightMotorBase = (float)(64*1000000.0/sysOsciFre); //128根据预分频
 
             MCF_GPT_GPTFLG1 = 0;                                    //清零中断标志寄存器
             MCF_GPT_GPTDDR &= ~MCF_GPT_GPTDDR_DDRT1;                //清零来设置为输入模式
@@ -75,26 +76,33 @@ void TGPTx_Init(uint8 mode){
 __declspec(interrupt) void TGPT0_interrupt(void){
 
     //MCF_GPIO_PORTTF |= MCF_GPIO_PORTTF_PORTTF3;//置位CD4520 Reset，清零Q0-Q3
-    rightMotorCnt[rightCnt&0x07] = (uint8)(MCF_GPT_GPTC0 - rightMSCnt);
+    rightMotorCnt[rightCnt&0x07] = MCF_GPT_GPTC0 - rightMSCnt;
+    //rightSSSum = (int16)((rightMotorCnt[0]+rightMotorCnt[1]+rightMotorCnt[2]+rightMotorCnt[3]+rightMotorCnt[4]+rightMotorCnt[5]+rightMotorCnt[6]+rightMotorCnt[7])>>3);
+    //sprintf(TXBuffer,"right:\t%u,%u\n",(uint16)(MCF_GPT_GPTC0 - rightMSCnt),(uint16)(1206147.179/rightMotorCnt[rightCnt&0x07]));
+    //sprintf(TXBuffer,"right:\t%u,%um/s,%u\n",(uint16)(MCF_GPT_GPTC0 - rightMSCnt),(uint16)(1206147.179/rightMotorCnt[rightCnt&0x07]),rightMSPwm);
+    //TUart0_Puts(TXBuffer);
     rightCnt++;
     rightMSCnt = MCF_GPT_GPTC0;
 
     //MCF_GPT_GPTFLG1 |= MCF_GPT_GPTFLG1_CF0;
-    sprintf(TXBuffer,"right:\t%u\n",(rightMotorCnt[0]+rightMotorCnt[1]+rightMotorCnt[2]+rightMotorCnt[3]+rightMotorCnt[4]+rightMotorCnt[5]+rightMotorCnt[6]+rightMotorCnt[7])/8);
-    TUart0_Puts(TXBuffer);
+    //sprintf(TXBuffer,"right:\t%u\n",(rightMotorCnt[0]+rightMotorCnt[1]+rightMotorCnt[2]+rightMotorCnt[3]+rightMotorCnt[4]+rightMotorCnt[5]+rightMotorCnt[6]+rightMotorCnt[7])/8);
+    //TUart0_Puts(TXBuffer);
 
     //MCF_GPIO_PORTTF &= !MCF_GPIO_PORTTF_PORTTF3;//清零CD4520 Reset，开始计数
 }
 __declspec(interrupt) void TGPT1_interrupt(void){
 
     //MCF_GPIO_PORTTF |= MCF_GPIO_PORTTF_PORTTF3;//置位CD4520 Reset，清零Q0-Q3
-    leftMotorCnt[leftCnt&0x07] = (uint8)(MCF_GPT_GPTC1 - leftMSCnt);
+    leftMotorCnt[leftCnt&0x07] = MCF_GPT_GPTC1 - leftMSCnt;
+    //leftSSSum = (uint16)((leftMotorCnt[0]+leftMotorCnt[1]+leftMotorCnt[2]+leftMotorCnt[3]+leftMotorCnt[4]+leftMotorCnt[5]+leftMotorCnt[6]+leftMotorCnt[7])>>3);
+    //leftSSSum = (leftMotorCnt[0]+leftMotorCnt[1]+leftMotorCnt[2]+leftMotorCnt[3]+leftMotorCnt[4]+leftMotorCnt[5]+leftMotorCnt[6]+leftMotorCnt[7])>>3;
+    //sprintf(TXBuffer,"left:\t%u,%u,%u\n",(uint16)(MCF_GPT_GPTC1 - leftMSCnt),(uint16)(94248.0/(leftMotorCnt[leftCnt&0x07] * leftMotorBase)),leftSSSum);
+    //TUart0_Puts(TXBuffer);
     leftCnt++;
     leftMSCnt = MCF_GPT_GPTC1;
-
     //MCF_GPT_GPTFLG1 |= MCF_GPT_GPTFLG1_CF1;
-    sprintf(TXBuffer,"left:\t%u\n",(leftMotorCnt[0]+leftMotorCnt[1]+leftMotorCnt[2]+leftMotorCnt[3]+leftMotorCnt[4]+leftMotorCnt[5]+leftMotorCnt[6]+leftMotorCnt[7])/8);
-    TUart0_Puts(TXBuffer);
+    //sprintf(TXBuffer,"left:\t%u\n",(leftMotorCnt[0]+leftMotorCnt[1]+leftMotorCnt[2]+leftMotorCnt[3]+leftMotorCnt[4]+leftMotorCnt[5]+leftMotorCnt[6]+leftMotorCnt[7])/8);
+    //TUart0_Puts(TXBuffer);
 
     //MCF_GPIO_PORTTF &= !MCF_GPIO_PORTTF_PORTTF3;//清零CD4520 Reset，开始计数
 

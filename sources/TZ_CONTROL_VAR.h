@@ -1,6 +1,8 @@
 #ifndef TZ_CONTROL_VAR
 #define TZ_CONTROL_VAR
 
+extern uint8 debugCnt;//调试出错位置
+
 extern uint8 controlMode;    //控制方式
 extern uint8 rowBreak;
 extern uint8 controlError;// 控制量计算错误变量
@@ -15,9 +17,9 @@ extern uint8 controlFinsh;//
 //近距离直线控制变量
 
 extern uint8 centLineOffset;
-extern uint8 lineOffsetCnt;
+extern int8 centerLineSub;
 extern uint8 lineOffsetRow;
-extern int16 lineOffsetValueCnt;
+
 
 extern uint8 lineRealDis;
 extern uint8 lineRealRate;
@@ -25,7 +27,7 @@ extern uint8 lineRealRate;
 extern float lineResSteerAngle;
 
 //中距离曲率控制变量
-
+/*
 extern int threePoint[3][3];
 extern uint8 tpStartDist;
 extern uint8 tpEndDist;
@@ -46,6 +48,22 @@ extern float radiusOfCurva_2;
 
 extern uint8 tp2ResSteerAngle;
 
+//远距离曲率控制变量
+
+extern int threePoint3[3][3];
+extern uint8 midThreePoint3Col1,midThreePoint3Col2;
+extern uint8 tp3RowCnt;
+extern uint8 tp3ColCnt;
+
+extern float radiusOfCurva_3;
+
+extern uint8 tp3ResSteerAngle;
+/*总控制变量*/
+extern float allRadiusOfCurva[IMG_H];
+extern int16 tpCol1,tpRow1;
+extern int16 tpCol2,tpRow2;
+extern int16 tpCol3,tpRow3;
+extern int16 tpLen1,tpLen2,tpLen3;
 /*电机相关变量*/
 
 extern float leftMotorBase;
@@ -53,19 +71,33 @@ extern float rightMotorBase;
 
 extern uint16 leftMSCnt,rightMSCnt;           //左右电机GPT值\
 
-extern uint8 leftMotorSpeed;   //左右电机速度值
-extern uint8 rightMotorSpeed;  //左右电机速度值
+extern uint16 leftMotorSpeed;
+extern uint16 rightMotorSpeed;
+extern uint16 leftMotorCntAve;     //左平均值
+extern uint16 rightMotorCntAve;    //右平均值
+extern uint16 leftMotorCnt[8];     //左8次值
+extern uint16 rightMotorCnt[8];    //右8次值
+
 extern uint8 leftCnt,rightCnt;
-extern uint16 motorSpeed;
-extern float tanValue;
+extern float motorSpeed;
+extern float leftMSPwm;
+extern float rightMSPwm;
+extern int motorMSPwm;
+extern float motorOffsetCnt;         //PID调节后的GPT差值
+extern float motorOffsetSpeed;
 
-extern uint16 leftMotorCnt[8];
-extern uint16 rightMotorCnt[8];
-extern uint16 motorCnt;
+extern int motorCnt;
 
-extern uint16 allMotorCnt;
 
 /*舵机相关变量*/
 extern uint16 pwmCnt;
+extern float steerOffsetCnt;
+
+/*总的控制变量*/
+extern int lineOffsetValueCnt[IMG_H];       //累积偏移值
+extern int lineOffsetValue[IMG_H];          //偏移值
+extern int lineOffsetCnt;       //临时偏移值记录变量
+extern uint8 PITCnt;                       //PIT中断计数
+
 
 #endif

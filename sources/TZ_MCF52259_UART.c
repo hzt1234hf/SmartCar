@@ -36,7 +36,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART0_UIMR = MCF_UART_UIMR_DB | MCF_UART_UIMR_COS;
         	//MCF_UART0_UIMR = MCF_UART_UIMR_FFULL_RXRDY;		//关闭所有中断
         	//               晶振频率 *1000000/需要的波特率*32
-        	ubgs = (uint16)(sysOsciFre/(256000*32));
+        	ubgs = (uint16)(sysOsciFre/(115200*32));
         	MCF_UART0_UBG1 = (uint8)((ubgs&0xFF00)>>8);
         	MCF_UART0_UBG2 = (uint8)(ubgs&0x00FF);
 
@@ -209,6 +209,7 @@ __declspec(interrupt) void UART0_DMA_interrupt(void){
     MCF_DMA0_DSR |= MCF_DMA_DSR_DONE;
 }
 __declspec(interrupt) void UART0_interrupt(void){
+
     uint8 a;
     TUart0_Putchar('A');
     if(MCF_UART0_USR&MCF_UART_USR_RXRDY){
@@ -216,8 +217,10 @@ __declspec(interrupt) void UART0_interrupt(void){
         TUart0_Putchar(a);
         TUart0_Putchar('+');
     }
+
 }
 __declspec(interrupt) void UART1_interrupt(void){
+
     uint8 a;
     TUart1_Putchar('B');
     if(MCF_UART1_USR&MCF_UART_USR_RXRDY){
@@ -225,8 +228,10 @@ __declspec(interrupt) void UART1_interrupt(void){
         TUart1_Putchar(a);
         TUart1_Putchar('+');
     }
+
 }
 __declspec(interrupt) void UART2_interrupt(void){
+
     uint8 a;
     TUart2_Putchar('C');
     if(MCF_UART2_USR&MCF_UART_USR_RXRDY){
@@ -234,5 +239,6 @@ __declspec(interrupt) void UART2_interrupt(void){
         TUart2_Putchar(a);
         TUart2_Putchar('+');
     }
+
 }
 #endif

@@ -33,6 +33,8 @@ void TZ_PLLinit(uint8 mode){
 
 int main(void)
 {
+    uint16 ab[] = {120,130,150,170,220,180,230,250,200,160,180,220,260,240,210,180,160,140,160,140,150,180,220,250,270,300,240,180,150,190};
+    uint8 c = 0;
 	EnableInterrupts();//打开总中断
 
 	TZ_PLLinit( PLL_128MHZ );//PLL初始化，时钟设置为80Mhz，可超频到144Mhz
@@ -42,8 +44,8 @@ int main(void)
 
 
 	/*串口初始化*/
-	TUartx_INIT(2);     //串口2初始化
-	TUartx_INIT(1);     //串口1初始化
+	//TUartx_INIT(2);     //串口2初始化
+	//TUartx_INIT(1);     //串口1初始化
     TUartx_INIT(0);     //串口0初始化
     TUart0_DMAInit();
 
@@ -77,8 +79,8 @@ int main(void)
 
 	/*串口测试*/
 	TUart0_Puts("Hello MCF52259 send by TUART0!\r\n");
-	TUart1_Puts("Hello MCF52259 send by TUART1!\r\n");
-	TUart2_Puts("Hello MCF52259 send by TUART2!\r\n");
+	//TUart1_Puts("Hello MCF52259 send by TUART1!\r\n");
+	//TUart2_Puts("Hello MCF52259 send by TUART2!\r\n");
 
 	/*DMA模块初始化*/
 	//TDMAx_Init(1);      //初始化DMA模块1，用于HREF获取图像数据
@@ -94,7 +96,7 @@ int main(void)
 	/*PWM模块   初始化*/
 	TPWMx_INIT(0);  //左电机PWM初始化 左右根据接线而定
 	TPWMx_INIT(2);  //右电机PWM初始化
-	//TPWMx_INIT(4);  //舵机PWM初始化
+	TPWMx_INIT(4);  //舵机PWM初始化
 
 	/*GPT模块初始化*/
 	TGPTx_Init(0);  //编码器1输入捕获模式初始化
@@ -107,20 +109,35 @@ int main(void)
 	/*外部中断初始化*/
 	//TEPORTx_Init(1);    //行外部中断初始化
 
-	TEPORTx_Init(7);    //场外部中断初始化
+    TEPORTx_Init(7);    //场外部中断初始化
 
 	/*定时器初始化*/
     TPITx_Init(0);      //初始化PIT0
     TPITx_Init(1);      //初始化PIT1
     TPIT0_SetPMR(1);    //PIT0中断时间设置为1ms
-    TPIT1_SetPMR(1); //PIT1中断时间设置为1000ms
+    TPIT1_SetPMR(1);    //PIT1中断时间设置为1000ms
     //TPIT0_ENABLE();     //PIT1使能
 
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
-    
-    while(1){}
+    SetSpeed = 100;
+    //leftSSSum = 6000;
+    //rightSSSum = 6000;
+
+    for(;;){
+        delay3();
+        delay3();
+        delay3();
+        delay3();
+        delay3();
+        delay3();
+        delay3();
+        SetSpeed = ab[c++];
+        if(c == 30)
+            c = 0;
+        
+    }
 	pwmCnt = 3050;//正常值为3000，舵机片有一点点，因此偏移一点
     TPWM45_SetDTY(pwmCnt);
 	while(1){

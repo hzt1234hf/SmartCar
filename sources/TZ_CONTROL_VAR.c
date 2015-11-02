@@ -1,6 +1,8 @@
 #include "DIY_ComDef.h"
 #ifdef TZ_CONTROL_VAR
 
+uint8 debugCnt;//调试出错位置
+
 uint8 controlMode = 0;    //控制方式
 uint8 rowBreak = 0;
 uint8 controlError = 0;// 控制量计算错误变量
@@ -15,17 +17,13 @@ uint8 controlFinsh = 0;//
 
 /*近距离直线控制变量*/
 
-uint8 centLineOffset = 5;
-uint8 lineOffsetCnt = 0;
-uint8 lineOffsetRow = 0;
-int16 lineOffsetValueCnt = 0;
 
 uint8 lineRealDis;
 uint8 lineRealRate;
 
 float lineResSteerAngle;
 /*中距离曲率控制变量*/
-
+/*
 int threePoint[3][3];
 uint8 tpStartDist = 0;
 uint8 tpEndDist = 0;
@@ -36,7 +34,7 @@ float radiusOfCurva_1;
 uint8 tpResSteerAngle;
 
 /*远距离曲率控制变量*/
-
+/*
 int threePoint2[3][3];
 uint8 tp2StartDist = 0;
 uint8 tp2EndDist = 0;
@@ -48,28 +46,65 @@ float radiusOfCurva_2;
 
 uint8 tp2ResSteerAngle;
 
-/*总控制变量*/
+/*远距离曲率控制变量*/
+/*
+int threePoint3[3][3];
+uint8 tp3StartDist = 0;
+uint8 tp3EndDist = 0;
+uint8 midThreePoint3Col1,midThreePoint3Col2;
+uint8 tp3RowCnt = 0;
+uint8 tp3ColCnt = 0;
 
-/*舵机相关变量*/
-uint16 pwmCnt;
+float radiusOfCurva_3;
+
+uint8 tp3ResSteerAngle;
+
+/*总控制变量*/
+float allRadiusOfCurva[IMG_H];
+int16 tpCol1,tpRow1;
+int16 tpCol2,tpRow2;
+int16 tpCol3,tpRow3;
+int16 tpLen1,tpLen2,tpLen3;
+
+uint8 centLineOffset = 5;
+uint8 lineOffsetRow = 0;
+
 /*电机相关变量*/
 float leftMotorBase;
 float rightMotorBase;
 
 uint16 leftMSCnt,rightMSCnt;           //左右电机GPT值
 
-uint8 leftMotorSpeed;
-uint8 leftCnt,rightCnt;
-uint8 rightMotorSpeed;
-uint16 motorSpeed;
-float tanValue;
+uint8 leftCnt,rightCnt; //左右电机GPT计数值
 
-uint16 leftMotorCnt[8];
-uint16 rightMotorCnt[8];
-uint16 motorCnt;
+uint16 leftMotorCntAve;     //GPT左平均值
+uint16 rightMotorCntAve;    //GPT右平均值
+uint16 leftMotorCnt[8];     //GPT左8次值
+uint16 rightMotorCnt[8];    //GPT右8次值
 
-uint16 allMotorCnt;
+float motorSpeed;          //当前速度值 单位(cm/s)
+uint16 leftMotorSpeed;      //当前左真实速度
+uint16 rightMotorSpeed;     //当前右真实速度
+float leftMSPwm;            //左电机当前PWM值
+float rightMSPwm;           //右电机当前PWM值
+float motorOffsetSpeed;       //PID调节后电机真实速度的差值
+float motorOffsetCnt;         //PID调节后的GPT差值
+int motorMSPwm;             //PID调节后总的电机PWM值
+
+
+int motorCnt;
+
+
+/*舵机相关变量*/
+uint16 pwmCnt;
+float steerOffsetCnt;
 
 /*PID相关变量*/
+
+/*总的控制变量*/
+int lineOffsetValueCnt[IMG_H];          //累积偏移值
+int lineOffsetValue[IMG_H];             //偏移值
+int lineOffsetCnt = 0;                  //临时偏移值记录变量
+uint8 PITCnt = 0;                       //PIT中断计数
 
 #endif

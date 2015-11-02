@@ -75,37 +75,40 @@ __declspec(interrupt) void EPORT7_interrupt(void){
 
     switch(Cnt_VSYN){
         case 1:{
-            sprintf(TXBuffer,"%u+",bool);
-            TUart0_Puts(TXBuffer);
+            //TPIT0_ENABLE();
             MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
             MCF_DMA3_DAR = (vuint32)&Image[0];      //重设数组地址
             MCF_DMA3_BCR = IMG_SIZE;                //重设大小
+            TPIT0_ENABLE();
         }break;
         case 2:{
+            //TPIT0_ENABLE();
             MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;      //开启一次场采集
         }break;
         case 3:{
+            //TPIT0_ENABLE();
             bool = 1;
+            debugCnt = 0;
             TPIT1_ENABLE();
         }break;
-
-        case 5:{
-            sprintf(TXBuffer,"%u+",bool);
-            TUart0_Puts(TXBuffer);
-
-        }break;
-        case 6:{
-            sprintf(TXBuffer,"%u+",bool);
-            TUart0_Puts(TXBuffer);
-            if(chang >= 75){
+        case 4:{
+            //PITCnt = 0;//PITCnt清零
+            //sprintf(TXBuffer,"5:%u,%u\n",bool,debugCnt);
+            //TUart0_Puts(TXBuffer);
+            TPIT0_ENABLE();
+/*
+            if(chang >= 49){
                 showImg();
                 chang = 0;
             }
+*/
             Cnt_VSYN = 0;
         }break;
+        case 5:{
+        }
     }
     Cnt_VSYN++;
-    chang++;
+    //chang++;
 
     MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF1;    //清中断标志位
 
