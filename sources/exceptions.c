@@ -420,9 +420,9 @@ __declspec(vectortable) vectorTableEntryType _vect[256] = {   /* Interrupt vecto
    asm_exception_handler,           /* 110 (0x___) Reserved                   */
    TGPT3_interrupt,           /* 111 (0x___) Reserved                   */
    asm_exception_handler,           /* 112 (0x___) Reserved                   */
-   asm_exception_handler,           /* 113 (0x___) Reserved                   */
-   asm_exception_handler,           /* 114 (0x___) Reserved                   */
-   asm_exception_handler,           /* 115 (0x___) Reserved                   */
+   TADCA_interrupt,           /* 113 (0x___) Reserved                   */
+   TADCB_interrupt,           /* 114 (0x___) Reserved                   */
+   TADCINT_interrupt,           /* 115 (0x___) Reserved                   */
    asm_exception_handler,           /* 116 (0x___) Reserved                   */
    asm_exception_handler,           /* 117 (0x___) Reserved                   */
    asm_exception_handler,           /* 118 (0x___) Reserved                   */

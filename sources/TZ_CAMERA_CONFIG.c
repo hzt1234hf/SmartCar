@@ -1,16 +1,25 @@
 #include "DIY_ComDef.h"
 #ifdef TZ_CAMERA_CONFIG
 
+/*
+*****2015.5.15 鹰眼摄像头配置模块
+*****功能：对鹰眼摄像头进行配置
+*****编写中遇到的主要问题：（
+    1.需要注意每个寄存器的作用
+）
+*/
 
 vuint8 Image[CAMERA_H][CAMERA_W_8] = {0};
-vuint8 * ImagePtr = Image[0];
+vuint8 Image_ToPC[IMG_SIZE+4];
+vuint8 *Image_Ptr;
 
 void TZ_OV7725_Init(){
 
     //寄存器，寄存器值次
     SCCB_WriteByte(OV7725_COM4         , 0xC1);
-    SCCB_WriteByte(OV7725_CLKRC        , 0x04);
-    //SCCB_WriteByte(OV7725_CLKRC,    0x00);
+    SCCB_WriteByte(OV7725_CLKRC        , 0x00);
+
+    //SCCB_WriteByte(OV7725_CLKRC        , 0x00);
     SCCB_WriteByte(OV7725_COM2         , 0x03);
     SCCB_WriteByte(OV7725_COM3         , 0xD0);
     SCCB_WriteByte(OV7725_COM7         , 0x40);
@@ -90,7 +99,9 @@ void TZ_OV7725_Init(){
     SCCB_WriteByte(OV7725_BDMStep      , 0x03);
     SCCB_WriteByte(OV7725_SDE          , 0x04);
     SCCB_WriteByte(OV7725_BRIGHT       , 0x00);
-    SCCB_WriteByte(OV7725_CNST         , 0xFF);
+
+    SCCB_WriteByte(OV7725_CNST         , 0x7F);
+
     SCCB_WriteByte(OV7725_SIGN         , 0x06);
     SCCB_WriteByte(OV7725_UVADJ0       , 0x11);
     SCCB_WriteByte(OV7725_UVADJ1       , 0x02);

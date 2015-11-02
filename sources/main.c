@@ -47,7 +47,21 @@ int main(void)
 	TUart0_Puts("Hello MCF52259 send by TUART0!\r\n");
 	TUart1_Puts("Hello MCF52259 send by TUART1!\r\n");
 	TUart2_Puts("Hello MCF52259 send by TUART2!\r\n");
-
+	
+	/*DMA模块初始化*/
+	//TDMAx_Init(1);      //初始化DMA模块1，用于HREF获取图像数据
+	//TDMAx_Init(2);      
+	TDMAx_Init(3);      //初始化DMA模块3，用于PCLK获取图像数据
+    //SET_DMA3_SAR(0x40100030);//DMA3源地址设为 A0-A7 的输入引脚地址
+    Image_ToPC[0] = 0x01;
+    Image_ToPC[1] = 0xFE;
+    Image_ToPC[IMG_SIZE-2] = 0xFE;
+    Image_ToPC[IMG_SIZE-1] = 0x01;
+    Image_Ptr = &Image_ToPC[2];
+    MCF_DMA3_SAR = (vuint32)0x40100030;
+    //MCF_DMA2_BCR = 10;
+    //MCF_DMA2_DCR |=  MCF_DMA_DCR_EEXT ;//外部触发
+    
 #if 1
 	/*PWM模块   初始化*/
 	TPWMx_INIT(0);  //左电机PWM初始化 左右根据接线而定
@@ -71,25 +85,14 @@ int main(void)
     TPITx_Init(1);      //初始化PIT1
     TPIT0_SetPMR(1);    //PIT0中断时间设置为1ms
     TPIT1_SetPMR(1000); //PIT1中断时间设置为1000ms
-    TPIT1_ENABLE();     //PIT1使能
-    
-	/*DMA模块初始化*/
-	//TDMAx_Init(1);      //初始化DMA模块1，用于HREF获取图像数据
-	//TDMAx_Init(2);      
-	TDMAx_Init(3);      //初始化DMA模块3，用于PCLK获取图像数据
-    //SET_DMA3_SAR(0x40100030);//DMA3源地址设为 A0-A7 的输入引脚地址
-    //MCF_DMA3_SAR = (vuint32)0x40100030;
-    //MCF_DMA2_BCR = 10;
-    //MCF_DMA2_DCR |=  MCF_DMA_DCR_EEXT ;//外部触发
-    sprintf(TXBuffer,"%u-",MCF_GPIO_PTCPAR);
-    TUart0_Puts(TXBuffer);
+    //TPIT1_ENABLE();     //PIT1使能
 
 	/*I2C模块(SCCB)初始化*/
     //MCF_GPIO_PASPAR |= MCF_GPIO_PASPAR_SCL0_SCL0 | MCF_GPIO_PASPAR_SDA0_SDA0;
     //MCF_GPIO_DDRAS |= MCF_GPIO_DDRAS_DDRAS0 | MCF_GPIO_DDRAS_DDRAS1 | MCF_GPIO_DDRAS_DDRAS2;
 
 	pwmCnt = 3250;
-	while(1){
+	while(1){}{
         while(pwmCnt<=4250){
             TPWM45_SetDTY(pwmCnt);
             pwmCnt++;
@@ -101,6 +104,5 @@ int main(void)
             delay2();
         }
 	}
-	while(1){}
 
 }

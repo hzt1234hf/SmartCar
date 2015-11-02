@@ -24,5 +24,6 @@ extern vuint16 leftMotorSpeed,rightMotorSpeed; //左右电机速度值
 #include "TZ_MCF52259_Delay.h"
 #include "TZ_CAMERA_SCCB.h"
 #include "TZ_CAMERA_CONFIG.h"
+#include "TZ_MCF52259_ADC.h"
 
 extern uint8 sysOsciFre;

@@ -2,12 +2,21 @@
 #ifdef TZ_MCF52259_UART
 /*
 *****2015.4.21串口模块编写完毕
-*****功能：UART0-2能够使用中断，UART0能够使用DMA传输
+*****功能：UART0-2能够使用中断，UART0暂不能够使用DMA传输
 *****编写中遇到的主要问题：（
     1.中断向量表不熟悉导致中断函数无法进入（与MCF_INTC0_IMRL寄存器和中断向量文件exceptions.c有关）
     2.UMR1寄存器使能了MCF_UART_UMR_RXIRQ导致不能进入中断
     3.MCF_UART2_UTB和MCF_UART2_URB混淆导致中断函数不能发送正确数据
     4.（最后问题）引脚接错导致其中一模块无法进入中断（⊙﹏⊙b汗-也是醉了）
+）
+*/
+
+/*
+*****2015.5.17串口DMA功能编写完成
+*****功能：UART0使用串口DMA发送数据
+*****编写中遇到的主要问题：（
+    1.在经过几天的DMA深度研究后，终于DMA模块写完了，所以UART理所当然也要分一杯羹，
+        所以DMA UART就这么完成了
 ）
 */
 char TXBuffer[100];
@@ -27,7 +36,7 @@ void TUartx_INIT(uint8 x){
         	MCF_UART0_UIMR = MCF_UART_UIMR_DB | MCF_UART_UIMR_COS;
         	//MCF_UART0_UIMR = MCF_UART_UIMR_FFULL_RXRDY;		//关闭所有中断
         	//               晶振频率 *1000000/需要的波特率*32
-        	ubgs = (uint16)((sysOsciFre*1000000)/(115200*32));
+        	ubgs = (uint16)((sysOsciFre*1000000)/(256000*32));
         	MCF_UART0_UBG1 = (uint8)((ubgs&0xFF00)>>8);
         	MCF_UART0_UBG2 = (uint8)(ubgs&0x00FF);
 

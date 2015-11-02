@@ -1,9 +1,6 @@
 #include "DIY_ComDef.h"
 #ifdef TZ_MCF52259_I2C
-/*
-2015.5.14：移植鹰眼的SCCB，自己写的有问题所以就注释掉了，注释的代码在下方,这也是至今为止第一个不是自己写的程序，
-由于老师逼得紧，所以直接移植过来用了，希望后来的同学能自己写一份，算是对SCCB的深刻学习吧
-*/
+
 void TI2Cx_Init(uint8 mode){
 
     switch(mode){

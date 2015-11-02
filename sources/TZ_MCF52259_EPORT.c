@@ -13,7 +13,6 @@ vuint16 chang,hang;
 vuint16 chang2,hang2;
 uint8 bool = 1;
 vuint8 Cnt_HREF = 0,Cnt_VSYN = 0;
-uint8 abc = 0x55;
 
 void TEPORTx_Init(uint8 mode){
     switch(mode){
@@ -77,56 +76,55 @@ __declspec(interrupt) void EPORT1_interrupt(void){
     chang++;
     Cnt_HREF = 0;
 #if 0
-    if((chang%10)==1){
-        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
-    }else if((chang%10)==2){
+//轮训部分采集
+    if((chang%25)==2){
         TPIT0_ENABLE();
-    }else{
+    }else if((chang%5)==0){
         chang2++;
         MCF_DMA3_SAR = (vuint32)0x40100030;
 
-        while(Cnt_HREF<=60){
+        while(Cnt_HREF<=120){
 
             MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;//清除中断标志位
             MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF][0]);
             MCF_DMA3_BCR = CAMERA_W_8;
             MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
-
+            hang2++;
+            while(!(MCF_EPORT_EPFR&MCF_EPORT_EPFR_EPF7))
             MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
             Cnt_HREF++;
-            while(!(MCF_EPORT_EPFR&MCF_EPORT_EPFR_EPF7))
             MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
         }
+    }
+#elif 1
+    if(0 == (chang%150)){
+        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
+        TPIT0_ENABLE();
+        chang = 1;
+
+    }else{
+        MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;       //清除中断标志位
+        MCF_DMA3_DAR = (vuint32)(&Image[0][0]);
+        MCF_DMA3_BCR = IMG_SIZE;
+        MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
     }
 #elif 0
-    if((chang%10)==2){
+//行中断全部采集
+    if((chang%30)==2){
+        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
         TPIT0_ENABLE();
-    }else if((chang%10)==0){
-        chang2++;
-        MCF_DMA3_SAR = (vuint32)0x40100030;
-
-        while(Cnt_HREF<=60){
-
-            MCF_DMA3_DSR |= MCF_DMA_DSR_DONE;//清除中断标志位
-            MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF][0]);
-            MCF_DMA3_BCR = CAMERA_W_8;
-            MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
-
-            MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
-            Cnt_HREF++;
-            while(!(MCF_EPORT_EPFR&MCF_EPORT_EPFR_EPF7))
-            MCF_EPORT_EPFR |= MCF_EPORT_EPFR_EPF7;    //清中断标志位
-        }
-        //MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
-    }
-#else
-    if((chang%10)==2){
-        TPIT0_ENABLE();
-    }else if((chang%10)==0){
-        chang2++;
         MCF_DMA3_SAR = (vuint32)0x40100030;
         MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
-    }else{
+    }
+#elif 0
+//行中断部分采集
+    if((chang%30)==2){
+        MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
+        TPIT0_ENABLE();
+        MCF_DMA3_SAR = (vuint32)0x40100030;
+    }else if((chang%5)==0){
+        MCF_EPORT_EPIER |= MCF_EPORT_EPIER_EPIE7;                   //时能中断
+    }else if((chang%5)==1){
         MCF_EPORT_EPIER &= ~MCF_EPORT_EPIER_EPIE7;                  //关闭中断
     }
 #endif
@@ -155,7 +153,7 @@ __declspec(interrupt) void EPORT7_interrupt(void){
     MCF_DMA3_DAR = (vuint32)(&Image[Cnt_HREF][0]);
     MCF_DMA3_BCR = CAMERA_W_8;
     MCF_DMA3_DCR |=  MCF_DMA_DCR_EEXT;
-    MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
+    //MCF_DTIM3_DTMR |= MCF_DTIM_DTMR_RST;
     Cnt_HREF++;
 #endif
     hang ++;
